@@ -1,0 +1,2834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F3EC">
+<title>生活台 · Life Desk</title>
+<style>
+/* ============ base ============ */
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Songti SC","Noto Serif SC",serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Roboto Mono",monospace;
+
+  --paper:#F6F3EC;
+  --paper-2:#FCFAF5;
+  --paper-3:#EFEAE0;
+  --ink:#1A1915;
+  --ink-2:#4A4740;
+  --ink-3:#8B8579;
+  --line:#DFD8CA;
+  --line-2:#E9E3D6;
+  --clay:#A9552F;
+  --clay-soft:#F0E2D8;
+  --sage:#5C7157;
+  --sage-soft:#E4EAE0;
+  --gold:#A98A4B;
+  --blue:#4C6472;
+  --danger:#9B3A2C;
+  --radius:3px;
+  --shadow:0 1px 0 rgba(26,25,21,.04);
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+}
+body::before{
+  content:"";position:fixed;inset:0;background-image:var(--noise);opacity:.045;
+  pointer-events:none;z-index:9999;mix-blend-mode:multiply;
+}
+body.modal-open{overflow:hidden}
+::selection{background:rgba(169,85,47,.16)}
+h1,h2,h3,h4,p,ul,ol,figure{margin:0;padding:0}
+ul,ol{list-style:none}
+button{font:inherit;color:inherit}
+a{color:inherit}
+svg{display:block;width:16px;height:16px}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+:focus-visible{outline:2px solid var(--clay);outline-offset:2px;border-radius:2px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#D8D1C2;border:3px solid var(--paper);border-radius:10px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ layout ============ */
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+.rail{
+  position:sticky;top:0;height:100vh;height:100dvh;
+  border-right:1px solid var(--line);
+  padding:26px 20px 18px;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--paper-2),var(--paper) 60%);
+}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:26px}
+.brand-mark{
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--ink);
+  display:grid;place-items:center;font-family:var(--serif);font-size:17px;
+  background:var(--paper-2);flex:none;
+}
+.brand-name{font-family:var(--serif);font-size:16px;letter-spacing:.14em;line-height:1.2}
+.brand-sub{font:9.5px var(--mono);letter-spacing:.24em;color:var(--ink-3);margin-top:3px}
+.rail-date{font:11px var(--mono);color:var(--ink-3);letter-spacing:.08em;margin-bottom:12px;border-top:1px solid var(--line-2);padding-top:12px}
+.rail-nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto;flex:1;margin:0 -8px;padding:0 8px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:9px 8px;
+  border:0;background:none;cursor:pointer;text-align:left;position:relative;
+  color:var(--ink-2);font-size:14px;letter-spacing:.02em;border-radius:2px;
+  transition:color .18s,background .18s;
+}
+.nav-item svg{width:16px;height:16px;opacity:.55;flex:none;transition:opacity .18s}
+.nav-item .idx{margin-left:auto;font:10.5px var(--mono);color:#B6AFA1;letter-spacing:.06em}
+.nav-item:hover{background:rgba(26,25,21,.045);color:var(--ink)}
+.nav-item:hover svg{opacity:.8}
+.nav-item[aria-current="true"]{color:var(--ink);font-weight:600}
+.nav-item[aria-current="true"] svg{opacity:1;color:var(--clay)}
+.nav-item[aria-current="true"]::before{content:"";position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:2px;height:17px;background:var(--clay)}
+.rail-foot{border-top:1px solid var(--line-2);padding-top:12px;margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.store{display:flex;align-items:center;gap:7px;font:11px var(--mono);color:var(--ink-3);letter-spacing:.04em}
+.store-dot{width:5px;height:5px;border-radius:50%;background:var(--sage);flex:none}
+.store.is-warn .store-dot{background:var(--gold)}
+.store.is-fail .store-dot{background:var(--danger)}
+.store.is-fail{color:var(--danger)}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:16px;
+  padding:0 clamp(16px,3vw,40px);height:58px;
+  border-bottom:1px solid var(--line-2);
+  background:rgba(246,243,236,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.tb-left{display:flex;align-items:baseline;gap:10px;min-width:0}
+.tb-title{font-family:var(--serif);font-size:16px;letter-spacing:.06em}
+.tb-sub{font:10px var(--mono);letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-date{font:11.5px var(--mono);color:var(--ink-3);letter-spacing:.04em;white-space:nowrap}
+.tb-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border:1px solid var(--line);border-radius:2px;background:transparent;color:var(--ink-2);font-size:12px;cursor:pointer;white-space:nowrap}
+.tb-btn:hover{border-color:var(--ink-3);color:var(--ink)}
+.tb-btn svg{width:14px;height:14px}
+
+.views{flex:1;padding-bottom:56px}
+.view{display:none;padding:clamp(20px,3vw,36px) clamp(16px,3.4vw,44px) 40px;max-width:1240px;margin:0 auto;animation:fade .34s ease both}
+.view.is-active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.tabbar{display:none}
+
+/* ============ type & utils ============ */
+.eyebrow{font:10px var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3)}
+.page-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,2.6vw,31px);letter-spacing:.02em;line-height:1.2}
+.page-head .sub{font-size:12.5px;color:var(--ink-3);margin-top:6px;letter-spacing:.02em}
+.page-head .head-right{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--ink-3);line-height:1.6}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num{font-family:var(--serif);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.muted{color:var(--ink-3)}
+.accent{color:var(--clay)}
+.sage{color:var(--sage)}
+.nowrap{white-space:nowrap}
+.empty{padding:26px 6px;color:var(--ink-3);font-size:12.5px;line-height:1.8;border-bottom:1px solid var(--line-2)}
+.empty strong{display:block;font-family:var(--serif);font-size:15px;color:var(--ink-2);font-weight:600;margin-bottom:4px}
+
+.sec{border-top:1px solid var(--line);padding-top:15px;margin-top:28px}
+.sec:first-child{margin-top:0}
+.sec-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head h2{font-family:var(--serif);font-size:16.5px;font-weight:600;letter-spacing:.03em}
+.sec-note{font:11px var(--mono);color:var(--ink-3);letter-spacing:.06em}
+.sec-actions{margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:22px 30px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 26px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 22px}
+.split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:30px}
+
+/* buttons / chips / fields */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:36px;padding:0 15px;border:1px solid var(--ink);background:var(--ink);
+  color:var(--paper-2);font-size:13px;letter-spacing:.03em;cursor:pointer;
+  border-radius:2px;transition:background .18s,color .18s,border-color .18s,opacity .18s;
+}
+.btn:hover{background:#000;border-color:#000}
+.btn:active{transform:translateY(.5px)}
+.btn svg{width:15px;height:15px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:rgba(26,25,21,.045);border-color:var(--ink-3)}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--ink-3);padding:0 8px}
+.btn.quiet:hover{color:var(--ink);background:rgba(26,25,21,.045)}
+.btn.danger{background:transparent;border-color:#DFCEC8;color:var(--danger)}
+.btn.danger:hover{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.sm{height:29px;padding:0 10px;font-size:12px}
+.btn.sm svg{width:13px;height:13px}
+.btn.block{width:100%}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  height:28px;padding:0 11px;border:1px solid var(--line);background:transparent;
+  border-radius:999px;font-size:12.5px;color:var(--ink-2);cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;transition:.16s;white-space:nowrap;
+}
+.chip:hover{border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}
+.chip .n{font-family:var(--mono);font-size:10.5px;opacity:.6}
+
+.field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.field>span{font:9.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.input,select.input,textarea.input{
+  width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);
+  padding:8px 1px;font:inherit;font-size:14px;color:var(--ink);border-radius:0;
+  transition:border-color .18s;min-width:0;
+}
+.input:hover{border-bottom-color:#CFC7B7}
+.input:focus{outline:none;border-bottom-color:var(--ink)}
+.input::placeholder{color:#B4AD9F}
+select.input{appearance:none;-webkit-appearance:none;padding-right:20px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238B8579' stroke-width='1.3'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 2px center}
+textarea.input{resize:vertical;min-height:62px;line-height:1.6;border:1px solid var(--line);padding:9px 10px;background:var(--paper-2)}
+textarea.input:focus{border-color:var(--ink)}
+input[type=number].input{-moz-appearance:textfield}
+input[type=number].input::-webkit-outer-spin-button,input[type=number].input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=date].input{font-family:var(--mono);font-size:12.5px}
+.form-grid{display:grid;gap:14px 16px}
+.form-grid.c2{grid-template-columns:1fr 1fr}
+.form-grid.c3{grid-template-columns:repeat(3,1fr)}
+.form-grid.c4{grid-template-columns:repeat(4,1fr)}
+.form-actions{display:flex;align-items:center;gap:9px;margin-top:16px;flex-wrap:wrap}
+.form-actions .hint{margin-left:auto}
+
+/* ============ today ============ */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.82fr);gap:clamp(20px,4vw,52px);align-items:center;padding-bottom:8px}
+.hero-date{font:11px var(--mono);letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px}
+.hero-score{display:flex;align-items:flex-start;gap:6px}
+.hero-num{font-family:var(--serif);font-size:clamp(66px,9.5vw,104px);line-height:.82;font-weight:500;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.hero-den{font:13px var(--mono);color:var(--ink-3);margin-top:10px}
+.hero-label{display:flex;align-items:center;gap:9px;margin-top:14px;font-family:var(--serif);font-size:16px}
+.hero-label .badge-sep{width:22px;height:1px;background:var(--line);display:inline-block}
+.hero-tip{margin-top:12px;font-size:13px;color:var(--ink-2);line-height:1.85;max-width:40ch}
+.hero-tip b{font-weight:600;color:var(--ink);border-bottom:1px solid var(--line)}
+.dims{display:flex;flex-direction:column;gap:13px;border-left:1px solid var(--line-2);padding-left:clamp(16px,3vw,32px)}
+@media(min-width:901px){.dims{border-left:1px solid var(--line-2)}}
+.dim-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-2)}
+.dim-top .v{font:11.5px var(--mono);color:var(--ink-3)}
+.dim-track{height:2px;background:var(--line-2);margin-top:7px;position:relative;overflow:hidden}
+.dim-fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.dim-fill.clay{background:var(--clay)}
+.dim-fill.sage{background:var(--sage)}
+.dim-fill.gold{background:var(--gold)}
+
+.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:26px}
+.qcell{background:var(--paper);padding:16px 18px;min-width:0}
+.qcell .k{font:9.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.qcell .v{font-family:var(--serif);font-size:23px;margin-top:7px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.qcell .v small{font-size:11px;font-family:var(--mono);color:var(--ink-3);margin-left:4px;letter-spacing:0}
+.qcell .d{font-size:11.5px;color:var(--ink-3);margin-top:4px}
+.qcell.clay .v{color:var(--clay)}
+.qcell.sage .v{color:var(--sage)}
+
+/* rows list */
+.rows{display:flex;flex-direction:column}
+.row{
+  display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-2);
+  font-size:13.5px;min-height:44px;
+}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{font-size:11.5px;color:var(--ink-3);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row .amt{font:13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .amt.out{color:var(--ink)}
+.row .amt.in{color:var(--sage)}
+.row.done .t{text-decoration:line-through;color:var(--ink-3)}
+.row .del{opacity:0;transition:opacity .18s;flex:none}
+.row:hover .del,.row:focus-within .del{opacity:1}
+@media(hover:none){.row .del{opacity:.5}}
+
+.check{
+  width:19px;height:19px;border-radius:50%;border:1px solid #C9C2B3;background:transparent;
+  display:grid;place-items:center;cursor:pointer;flex:none;transition:.18s;padding:0;
+}
+.check svg{width:11px;height:11px;opacity:0;transition:opacity .16s;color:var(--paper-2)}
+.check[aria-checked="true"]{background:var(--ink);border-color:var(--ink)}
+.check[aria-checked="true"] svg{opacity:1}
+.check.sage[aria-checked="true"]{background:var(--sage);border-color:var(--sage)}
+
+.tag{display:inline-flex;align-items:center;height:18px;padding:0 6px;font:10px var(--mono);letter-spacing:.05em;border:1px solid var(--line);color:var(--ink-3);border-radius:2px;white-space:nowrap}
+.tag.warm{border-color:#E2C9BC;color:var(--clay)}
+.tag.cool{border-color:#CBD8DE;color:var(--blue)}
+.tag.green{border-color:#CFDCC9;color:var(--sage)}
+.tag.gold{border-color:#E3D5B6;color:var(--gold)}
+
+/* ============ money ============ */
+.month-nav{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:2px;background:var(--paper-2)}
+.month-nav button{width:28px;height:29px;display:grid;place-items:center;border:0;background:transparent;cursor:pointer;color:var(--ink-3)}
+.month-nav button:hover{color:var(--ink);background:rgba(26,25,21,.04)}
+.month-nav span{font:12px var(--mono);padding:0 4px;min-width:82px;text-align:center;letter-spacing:.03em}
+
+.money-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.msum{background:var(--paper);padding:15px 16px 14px}
+.msum .k{font:9.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.msum .v{font-family:var(--serif);font-size:clamp(19px,2.4vw,25px);margin-top:8px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.msum .v small{font:12px var(--mono);color:var(--ink-3);margin-right:3px;vertical-align:2px}
+.msum .s{font-size:11px;color:var(--ink-3);margin-top:3px}
+.msum.out .v{color:var(--ink)}
+.msum.in .v{color:var(--sage)}
+.msum.bal .v{color:var(--clay)}
+.budget-line{margin-top:11px}
+.budget-track{height:3px;background:var(--line-2);position:relative;margin-top:6px}
+.budget-fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .5s}
+.budget-fill.over{background:var(--clay)}
+
+.bar-list{display:flex;flex-direction:column;gap:11px}
+.bar-row{font-size:12.5px}
+.bar-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:5px;color:var(--ink-2)}
+.bar-top .n{display:flex;align-items:center;gap:7px;min-width:0}
+.bar-top .n span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-top .v{font:11.5px var(--mono);color:var(--ink-3);white-space:nowrap}
+.bar-track{height:5px;background:var(--line-2);position:relative;overflow:hidden}
+.bar-fill{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .55s cubic-bezier(.22,1,.36,1)}
+.bar-fill.c1{background:#A9552F}.bar-fill.c2{background:#5C7157}.bar-fill.c3{background:#A98A4B}
+.bar-fill.c4{background:#4C6472}.bar-fill.c5{background:#8B6E63}.bar-fill.c6{background:#7C7A55}
+.cat-dot{width:6px;height:6px;border-radius:50%;background:var(--ink-3);flex:none}
+.cat-dot.c1{background:#A9552F}.cat-dot.c2{background:#5C7157}.cat-dot.c3{background:#A98A4B}
+.cat-dot.c4{background:#4C6472}.cat-dot.c5{background:#8B6E63}.cat-dot.c6{background:#7C7A55}
+
+.monthbars{display:flex;align-items:flex-end;gap:clamp(6px,1.4vw,16px);height:150px;padding-top:6px}
+.mbar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%;position:relative}
+.mbar .bars{display:flex;align-items:flex-end;gap:3px;height:100%;width:100%;justify-content:center}
+.mbar .b{width:38%;max-width:17px;min-height:2px;background:var(--ink);opacity:.85;transition:height .5s}
+.mbar .b.in{background:var(--sage);opacity:.55}
+.mbar .lbl{font:10.5px var(--mono);color:var(--ink-3);letter-spacing:.02em;white-space:nowrap}
+.mbar.is-cur .lbl{color:var(--ink);font-weight:600}
+.mbar.is-cur .b{background:var(--clay);opacity:1}
+.mbar.is-cur .b.in{background:var(--sage);opacity:.6}
+.legend{display:flex;gap:14px;font:11px var(--mono);color:var(--ink-3);margin-top:10px}
+.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px}
+
+.ledger-day{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:15px 0 6px;border-bottom:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
+.ledger-day .d{font:11px var(--mono);letter-spacing:.05em}
+.ledger-day .sum{font:11px var(--mono)}
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.chips-end{margin-left:auto}
+@media(max-width:900px){.chips-end{margin-left:0}}
+
+/* ============ habits ============ */
+.habit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.habit{border:1px solid var(--line-2);background:var(--paper-2);padding:16px 16px 14px;border-radius:3px;position:relative;display:flex;flex-direction:column;gap:12px}
+.habit::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;background:var(--hc,var(--sage));opacity:.6;border-radius:2px}
+.habit-top{display:flex;align-items:flex-start;gap:10px}
+.habit-name{font-family:var(--serif);font-size:16px;letter-spacing:.02em;line-height:1.35}
+.habit-meta{font:10.5px var(--mono);color:var(--ink-3);margin-top:3px;letter-spacing:.03em}
+.habit-top .tools{margin-left:auto;display:flex;gap:2px;flex:none}
+.habit-ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:34px}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:2px;background:var(--paper);height:32px}
+.stepper button{width:30px;height:30px;border:0;background:transparent;cursor:pointer;color:var(--ink-2);display:grid;place-items:center;font-size:16px;line-height:1}
+.stepper button:hover{background:rgba(26,25,21,.05);color:var(--ink)}
+.stepper .val{min-width:42px;text-align:center;font:12.5px var(--mono);font-variant-numeric:tabular-nums}
+.stepper .val small{font-size:10px;color:var(--ink-3);margin-left:2px}
+.habit-prog{flex:1;min-width:80px}
+.habit-prog .pt{display:flex;justify-content:space-between;font:10.5px var(--mono);color:var(--ink-3);margin-bottom:4px}
+.habit-num{display:flex;align-items:center;gap:8px}
+.habit-num .input{width:88px;text-align:center;font:13px var(--mono);border:1px solid var(--line);background:var(--paper);padding:6px 4px;border-radius:2px}
+.heat{display:grid;grid-template-columns:repeat(15,1fr);gap:3px}
+.heat-cell{aspect-ratio:1;border-radius:1.5px;background:var(--line-2);position:relative;cursor:default}
+.heat-cell[data-lv="1"]{background:#DCE3D6}
+.heat-cell[data-lv="2"]{background:#B3C2A9}
+.heat-cell[data-lv="3"]{background:#879B7C}
+.heat-cell[data-lv="4"]{background:#5C7157}
+.heat-cell.is-today{outline:1px solid var(--clay);outline-offset:1px}
+.heat-foot{display:flex;justify-content:space-between;font:9.5px var(--mono);color:#B4AD9F;letter-spacing:.04em}
+.habit-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font:11px var(--mono);color:var(--ink-3)}
+
+/* ============ fitness ============ */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.kpi{background:var(--paper);padding:15px 16px}
+.kpi .k{font:9.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.kpi .v{font-family:var(--serif);font-size:clamp(21px,2.5vw,27px);margin-top:7px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .v small{font:11px var(--mono);color:var(--ink-3);margin-left:3px;letter-spacing:0}
+.kpi .s{font-size:11px;color:var(--ink-3);margin-top:3px}
+.kpi .s .up{color:var(--sage)}
+.kpi .s .down{color:var(--clay)}
+
+.chart-wrap{position:relative;width:100%;overflow:hidden}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font-family:var(--mono);font-size:9px;fill:#9A9488;letter-spacing:.02em}
+.chart .grid-l{stroke:#EAE4D7;stroke-width:1}
+.chart .goal-l{stroke:#C9A6A0;stroke-width:1;stroke-dasharray:3 4}
+.chart .w-line{fill:none;stroke:#1A1915;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.chart .ma-line{fill:none;stroke:#A9552F;stroke-width:1.4;stroke-dasharray:5 4;stroke-linejoin:round}
+.chart .w-dot{fill:#F6F3EC;stroke:#1A1915;stroke-width:1.4}
+.chart-area{fill:rgba(26,25,21,.045)}
+
+.plan-board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.plan-day{border:1px solid var(--line-2);background:var(--paper-2);padding:9px 8px;min-height:104px;display:flex;flex-direction:column;gap:7px;border-radius:2px}
+.plan-day.is-today{border-color:var(--ink-3);background:#F3EFE5}
+.plan-day .dh{display:flex;align-items:baseline;justify-content:space-between;font:10px var(--mono);color:var(--ink-3);letter-spacing:.06em}
+.plan-day .dh b{font-family:var(--serif);font-size:12px;color:var(--ink-2);font-weight:600;letter-spacing:.04em}
+.plan-day ul{display:flex;flex-direction:column;gap:5px;flex:1}
+.plan-item{display:flex;gap:5px;align-items:flex-start;font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.plan-item button.pc{width:12px;height:12px;border:1px solid #C9C2B3;border-radius:50%;flex:none;margin-top:2px;background:transparent;cursor:pointer;padding:0}
+.plan-item button.pc[aria-checked="true"]{background:var(--sage);border-color:var(--sage)}
+.plan-item.done span{text-decoration:line-through;color:var(--ink-3)}
+.plan-item .x{margin-left:auto;opacity:0;border:0;background:none;cursor:pointer;color:var(--ink-3);padding:0 1px;font-size:12px;line-height:1}
+.plan-item:hover .x{opacity:.7}
+.plan-day .addp{margin-top:auto;border:1px dashed var(--line);background:transparent;color:var(--ink-3);font-size:10.5px;height:22px;border-radius:2px;cursor:pointer;width:100%}
+.plan-day .addp:hover{border-color:var(--ink-3);color:var(--ink)}
+
+.deficit{display:flex;align-items:flex-end;gap:6px;height:64px;margin-top:12px}
+.dbar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;height:100%}
+.dbar i{display:block;width:62%;background:var(--sage);opacity:.7;min-height:2px;height:0;transition:height .4s}
+.dbar.neg i{background:var(--clay);opacity:.8}
+.dbar span{font:9px var(--mono);color:var(--ink-3)}
+
+/* ============ agenda ============ */
+.cal{border-top:1px solid var(--line);padding-top:14px}
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cal-head .m{font-family:var(--serif);font-size:16px;letter-spacing:.04em}
+.cal-head .nav{margin-left:auto;display:flex;gap:2px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-wd{font:9.5px var(--mono);color:#B0A99B;text-align:center;padding-bottom:5px;letter-spacing:.08em}
+.cal-cell{position:relative;height:clamp(42px,5.2vw,56px);border:1px solid transparent;background:transparent;border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:12px var(--mono);color:var(--ink-2);padding:0}
+.cal-cell:hover{background:rgba(26,25,21,.05)}
+.cal-cell.out{color:#C6BFB1;cursor:default}
+.cal-cell.out:hover{background:transparent}
+.cal-cell.is-today{border-color:var(--line);font-weight:600}
+.cal-cell.is-sel{background:var(--ink);color:var(--paper-2)}
+.cal-cell.is-sel .cal-dot{background:var(--paper-2)}
+.cal-dots{display:flex;gap:2px;height:3px;align-items:center}
+.cal-dot{width:3px;height:3px;border-radius:50%;background:var(--clay)}
+.cal-dot.g{background:var(--sage)}
+
+.agenda-day{border-top:1px solid var(--line);padding-top:14px}
+.agenda-day .dh{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.agenda-day .dh b{font-family:var(--serif);font-size:15px}
+.agenda-day .dh span{font:10.5px var(--mono);color:var(--ink-3)}
+.ev-time{font:11.5px var(--mono);color:var(--ink-3);width:42px;flex:none;letter-spacing:.02em}
+.ev-time.over{color:var(--clay)}
+
+/* ============ buy ============ */
+.shop-head{display:flex;align-items:baseline;gap:10px;font-size:12px;color:var(--ink-3);padding:10px 0;border-bottom:1px solid var(--line)}
+.shop-head .t{margin-left:auto;font:12px var(--mono);color:var(--ink)}
+.shop-cat{font:9.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding:14px 0 4px;display:flex;align-items:center;gap:8px}
+.shop-cat::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.price{font:12.5px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qty{font:11px var(--mono);color:var(--ink-3)}
+
+/* ============ media ============ */
+.covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:18px 16px}
+.cover{display:flex;flex-direction:column;gap:8px;cursor:pointer;border:0;background:none;padding:0;text-align:left}
+.cover-art{
+  aspect-ratio:2/3;width:100%;border-radius:2px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;padding:12px 11px;
+  box-shadow:0 1px 2px rgba(26,25,21,.12),0 8px 18px -12px rgba(26,25,21,.35);
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.cover:hover .cover-art{transform:translateY(-2px);box-shadow:0 2px 4px rgba(26,25,21,.14),0 16px 26px -16px rgba(26,25,21,.4)}
+.cover-art::after{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:rgba(0,0,0,.14)}
+.cover-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover-art .ct{font-family:var(--serif);font-size:14px;line-height:1.3;color:#FCFAF5;position:relative;z-index:1;letter-spacing:.02em;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cover-art .ca{font:9px var(--mono);letter-spacing:.1em;color:rgba(255,255,255,.72);position:relative;z-index:1;text-transform:uppercase}
+.cover-art .ctype{position:absolute;right:9px;top:9px;font:9px var(--mono);letter-spacing:.1em;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.35);padding:1px 4px;border-radius:1px;z-index:2}
+.cover-cap{font-size:12px;line-height:1.45;color:var(--ink-2);display:flex;flex-direction:column;gap:2px}
+.cover-cap .ct2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.cover-cap .cm{font:10px var(--mono);color:var(--ink-3);display:flex;align-items:center;gap:6px}
+
+.stars{display:inline-flex;gap:1px;align-items:center}
+.stars svg{width:11px;height:11px;fill:#DED7C9}
+.stars svg.on{fill:var(--gold)}
+.stars.big svg{width:19px;height:19px;cursor:pointer}
+.star-pick{display:inline-flex;gap:5px;align-items:center}
+.star-pick button{border:0;background:none;padding:2px;cursor:pointer;line-height:0}
+.star-pick svg{width:22px;height:22px;fill:#DED7C9;transition:fill .12s}
+.star-pick button.on svg{fill:var(--gold)}
+
+.media-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.mstat{background:var(--paper);padding:13px 15px}
+.mstat .k{font:9.5px var(--mono);letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase}
+.mstat .v{font-family:var(--serif);font-size:22px;margin-top:5px}
+.mstat .v small{font:10.5px var(--mono);color:var(--ink-3);margin-left:3px}
+.mrow{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line-2);align-items:flex-start;cursor:pointer}
+.mrow:hover .mrow-t{color:var(--clay)}
+.mrow-thumb{width:44px;height:62px;flex:none;border-radius:2px;overflow:hidden;position:relative;display:flex;align-items:flex-end;padding:6px}
+.mrow-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mrow-t{font-family:var(--serif);font-size:15px;letter-spacing:.02em;line-height:1.4;transition:color .16s}
+.mrow-m{font:10.5px var(--mono);color:var(--ink-3);margin-top:3px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.mrow-r{font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mrow-rt{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.dot-sep{width:3px;height:3px;background:#C6BFB1;border-radius:50%;display:inline-block}
+
+/* ============ data ============ */
+.dgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.dblock{border-top:1px solid var(--line);padding-top:14px}
+.dblock h3{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.03em;margin-bottom:4px}
+.dblock .hint{margin-bottom:12px}
+.meter{height:4px;background:var(--line-2);position:relative;margin:10px 0 6px;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--sage)}
+.stat-list{display:flex;flex-wrap:wrap;gap:6px 18px;font:11.5px var(--mono);color:var(--ink-3);margin-top:10px}
+.stat-list b{color:var(--ink);font-weight:600}
+.zone{border:1px solid #E4D6CF;background:#FBF4F1;padding:15px 16px;border-radius:3px}
+.zone h3{color:var(--danger)}
+
+/* ============ modal / toast ============ */
+.modal-mask{position:fixed;inset:0;background:rgba(26,25,21,.42);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;padding:18px;animation:fade .2s ease}
+.modal{background:var(--paper-2);border:1px solid var(--line);border-radius:4px;width:min(560px,100%);max-height:88vh;overflow:auto;box-shadow:0 30px 70px -30px rgba(26,25,21,.5);animation:pop .26s cubic-bezier(.22,1,.36,1)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:flex-start;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line-2);position:sticky;top:0;background:var(--paper-2);z-index:2}
+.modal-head h3{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:.03em}
+.modal-head .hint{margin-top:3px}
+.modal-head .x{margin-left:auto;flex:none}
+.modal-body{padding:18px 20px}
+.modal-foot{padding:0 20px 20px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.modal-foot .spacer{flex:1}
+
+#toasts{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;width:min(440px,calc(100vw - 32px));pointer-events:none}
+.toast{
+  background:var(--ink);color:var(--paper-2);padding:10px 15px;border-radius:3px;font-size:13px;
+  box-shadow:0 14px 30px -14px rgba(0,0,0,.55);animation:tin .26s ease both;max-width:100%;
+  display:flex;align-items:center;gap:9px;line-height:1.5;
+}
+.toast.ready{pointer-events:auto}
+.toast.warn{background:#7A5A22}
+.toast.err{background:var(--danger)}
+.toast svg{width:15px;height:15px;flex:none}
+.toast .tx{flex:1}
+.toast button{border:0;background:rgba(255,255,255,.15);color:inherit;font-size:11.5px;padding:4px 8px;border-radius:2px;cursor:pointer;white-space:nowrap}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* banner */
+.banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid #E3D5B6;background:#FBF5E7;color:#6E5522;padding:10px 13px;font-size:12.5px;border-radius:3px;margin-bottom:18px;line-height:1.6}
+.banner svg{width:15px;height:15px;flex:none}
+.banner .b-actions{margin-left:auto;display:flex;gap:7px}
+.banner .b-actions button{border:1px solid #DCC79B;background:transparent;color:#6E5522;font-size:11.5px;padding:3px 9px;border-radius:2px;cursor:pointer}
+.banner.err{border-color:#E4C9C2;background:#FBF1EE;color:var(--danger)}
+.banner.err .b-actions button{border-color:#DFBAB0;color:var(--danger)}
+
+/* recovery */
+.recovery{position:fixed;inset:0;background:var(--paper);z-index:400;overflow:auto;padding:clamp(20px,6vw,64px);display:flex;justify-content:center}
+.recovery-inner{max-width:620px;width:100%}
+.recovery h1{font-family:var(--serif);font-size:clamp(24px,4vw,32px);font-weight:600;margin-bottom:10px}
+.recovery pre{background:var(--paper-3);border:1px solid var(--line);padding:12px;font:11px/1.6 var(--mono);max-height:150px;overflow:auto;white-space:pre-wrap;word-break:break-all;color:var(--ink-2);border-radius:3px;margin:14px 0}
+.recovery .ops{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.recovery .op{border:1px solid var(--line);background:var(--paper-2);padding:13px 15px;border-radius:3px;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:flex-start;width:100%}
+.recovery .op:hover{border-color:var(--ink-3)}
+.recovery .op b{font-size:13.5px;display:block;margin-bottom:2px}
+.recovery .op small{color:var(--ink-3);font-size:11.5px;line-height:1.6}
+
+/* ============ responsive ============ */
+@media(max-width:1080px){
+  .hero{grid-template-columns:1fr;gap:26px}
+  .dims{border-left:0;padding-left:0;border-top:1px solid var(--line-2);padding-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px 24px}
+  .plan-board{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g3{grid-template-columns:1fr 1fr}
+  .money-sum{grid-template-columns:1fr 1fr}
+  .kpi-strip{grid-template-columns:1fr 1fr}
+}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .rail{display:none}
+  .main{padding-bottom:0}
+  .topbar{height:52px;padding:0 15px}
+  .tb-sub{display:none}
+  .tb-date{display:none}
+  .views{padding-bottom:78px}
+  .view{padding:20px 15px 30px}
+  .tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:rgba(250,248,242,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-top:1px solid var(--line);padding:6px 4px calc(5px + env(safe-area-inset-bottom));
+    overflow-x:auto;scrollbar-width:none;
+  }
+  .tabbar::-webkit-scrollbar{display:none}
+  .tab{flex:1 1 0;min-width:0;border:0;background:none;padding:4px 2px 3px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-3);font-size:10px;letter-spacing:.02em;cursor:pointer;white-space:nowrap}
+  .tab svg{width:19px;height:19px;opacity:.6}
+  .tab[aria-current="true"]{color:var(--clay)}
+  .tab[aria-current="true"] svg{opacity:1}
+  .g2,.split,.dgrid{grid-template-columns:1fr;gap:22px}
+  .g3,.g4{grid-template-columns:1fr 1fr}
+  .habit-grid{grid-template-columns:1fr}
+  .plan-board{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form-grid.c3,.form-grid.c4{grid-template-columns:1fr 1fr}
+  .quick{grid-template-columns:minmax(0,1fr);gap:1px}
+  .qcell{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 12px;padding:12px 14px}
+  .qcell .v{margin-top:0}
+  .qcell .d{margin-top:0;flex:1 1 100%;text-align:left}
+  .monthbars{height:126px}
+  .covers{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px 11px}
+  .hero-num{font-size:clamp(58px,17vw,84px)}
+  #toasts{bottom:calc(72px + env(safe-area-inset-bottom))}
+  .banner{margin-bottom:14px}
+  .row .del{opacity:.45}
+  .media-stats{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .form-grid.c2,.form-grid.c3,.form-grid.c4{grid-template-columns:1fr 1fr}
+  .form-grid.c2>*:first-child{grid-column:1/-1}
+  .g3,.g4{grid-template-columns:1fr}
+  .plan-board{grid-template-columns:1fr}
+  .heat{grid-template-columns:repeat(10,1fr)}
+  .row{padding:10px 0;gap:9px}
+  .money-sum{grid-template-columns:1fr 1fr}
+  .msum{padding:12px 12px}
+  .kpi{padding:12px 13px}
+  .covers{grid-template-columns:repeat(3,1fr);gap:12px 9px}
+  .cover-art{padding:9px 8px}
+  .cover-art .ct{font-size:12px}
+  .modal-mask{padding:0;align-items:flex-end}
+  .modal{width:100%;max-height:92vh;border-radius:8px 8px 0 0;border-bottom:0}
+  .page-head{gap:12px}
+  .page-head .head-right{margin-left:0;width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+<style>
+/* ===== 补充组件 ===== */
+.picker{display:flex;gap:7px;align-items:center}
+.picker button{width:20px;height:20px;border-radius:50%;border:1px solid rgba(26,25,21,.12);cursor:pointer;padding:0;transition:box-shadow .16s}
+.picker button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--paper-2),0 0 0 3px var(--ink-2)}
+.mini{font-size:11px;color:var(--ink-3);line-height:1.7}
+.stat-inline{display:flex;gap:16px;flex-wrap:wrap;font:11.5px var(--mono);color:var(--ink-3)}
+.stat-inline b{color:var(--ink);font-weight:600}
+.badge-count{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--paper-3);color:var(--ink-2);font:10px var(--mono)}
+.cover-drop{border:1px dashed var(--line);border-radius:3px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--paper)}
+.cover-drop:hover{border-color:var(--ink-3)}
+.cover-drop .thumb{width:38px;height:54px;border-radius:2px;background:var(--paper-3);flex:none;overflow:hidden;display:grid;place-items:center;font:9px var(--mono);color:var(--ink-3)}
+.cover-drop .thumb img{width:100%;height:100%;object-fit:cover}
+.cover-drop .txt{font-size:11.5px;color:var(--ink-3);line-height:1.6}
+.cover-drop .txt b{display:block;color:var(--ink-2);font-size:12px;font-weight:500}
+.plan-add{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.plan-add .input{flex:1;min-width:110px;font-size:12px;padding:5px 1px}
+.plan-add select.input{max-width:74px;font-size:11.5px;padding:5px 14px 5px 1px}
+.plan-add .btn{height:30px;font-size:11.5px;padding:0 10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:var(--paper-2)}
+.seg button{height:29px;padding:0 10px;border:0;border-right:1px solid var(--line);background:transparent;font-size:11.5px;color:var(--ink-3);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
+.seg button svg{width:13px;height:13px}
+.dir{font:10.5px var(--mono);display:inline-flex;align-items:center;gap:3px}
+.dir.dn{color:var(--sage)}
+.dir.up{color:var(--clay)}
+.hr{height:1px;background:var(--line-2);margin:14px 0;border:0}
+.quote{font-family:var(--serif);font-size:13px;line-height:1.9;color:var(--ink-2);border-left:1px solid var(--line);padding-left:12px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px;align-items:baseline}
+.kv dt{font:10.5px var(--mono);color:var(--ink-3);white-space:nowrap}
+.kv dd{margin:0;color:var(--ink)}
+@media(max-width:900px){
+  .picker{gap:9px}
+  .picker button{width:24px;height:24px}
+  .seg button{height:32px;padding:0 9px}
+}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"/>
+    </symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 8.5V7a2 2 0 0 1 2-2h12.5a1.5 1.5 0 0 1 1.5 1.5V9"/><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M16.5 12.5h.01"/>
+    </symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 4c0 8-4.5 13-10 13a5 5 0 0 1-5-5C5 6.5 11 4 20 4Z"/><path d="M4 20c1.5-4.5 4.5-8 9-10.5"/>
+    </symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12h3.5l2-5 3.5 10 2.5-7 2 3H21"/>
+    </symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>
+    </symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 5.5A2 2 0 0 1 6 3.5h13v15H6a2 2 0 0 0-2 2V5.5Z"/><path d="M4 18.5V21h15v-2.5M8 7.5h7M8 11h6"/>
+    </symbol>
+    <symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 7h16M9 7V5h6v2M6.5 7l.8 13h9.4l.8-13M10 11v5.5M14 11v5.5"/>
+    </symbol>
+    <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M4.5 19.5h15"/>
+    </symbol>
+    <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20V9M7.5 13.5 12 9l4.5 4.5M4.5 4.5h15"/>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5-5.9-3.1-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9 2.9-6Z"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v4.5h-4.5"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3.5 21 20H3L12 3.5Z"/><path d="M12 9.5v4.5M12 17h.01"/>
+    </symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 5.5l3 3"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.2 2"/>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12h.01"/></symbol>
+    <symbol id="i-rows" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark">生</div>
+      <div>
+        <div class="brand-name">生活台</div>
+        <div class="brand-sub">LIFE DESK</div>
+      </div>
+    </div>
+    <div class="rail-date" id="railDate"></div>
+    <nav class="rail-nav" id="railNav" aria-label="主导航"></nav>
+    <div class="rail-foot">
+      <div class="store" id="storeState"><span class="store-dot"></span><span id="storeText">本地已保存</span></div>
+      <button class="btn ghost sm" data-act="export-json">
+        <svg><use href="#i-down"/></svg>导出备份
+      </button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="tb-left">
+        <span class="tb-title" id="tbTitle">今日</span>
+        <span class="tb-sub" id="tbSub">Today</span>
+      </div>
+      <div class="tb-right">
+        <button class="tb-btn" data-act="export-json">
+          <svg><use href="#i-down"/></svg>备份
+        </button>
+        <span class="tb-date" id="tbDate"></span>
+      </div>
+    </header>
+    <div class="views" id="views">
+      <section class="view is-active" data-view="today"><div class="pane" id="pane-today"></div></section>
+      <section class="view" data-view="money"><div class="pane" id="pane-money"></div></section>
+      <section class="view" data-view="habits"><div class="pane" id="pane-habits"></div></section>
+      <section class="view" data-view="fitness"><div class="pane" id="pane-fitness"></div></section>
+      <section class="view" data-view="agenda"><div class="pane" id="pane-agenda"></div></section>
+      <section class="view" data-view="buy"><div class="pane" id="pane-buy"></div></section>
+      <section class="view" data-view="media"><div class="pane" id="pane-media"></div></section>
+      <section class="view" data-view="data"><div class="pane" id="pane-data"></div></section>
+    </div>
+  </div>
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="底部导航"></nav>
+<div id="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<input type="file" id="coverFile" accept="image/*" hidden>
+
+<noscript><div style="padding:40px;font-family:serif">这个工作台需要启用 JavaScript 才能保存你的记录。</div></noscript>
+
+
+
+<script>
+'use strict';
+/* ==================================================================
+   生活台 · Life Desk —— 单文件生活工作台
+   数据全部保存在 localStorage，可随时导出 JSON 备份 / Excel 明细
+   ================================================================== */
+const APP_ID='lifedesk';
+const KEY='lifedesk.v1';
+const BAK='lifedesk.v1.bak';
+const VERSION=1;
+const BACKUP_EVERY=20;
+
+const VIEWS=[
+  {id:'today',  name:'今日',  sub:'Today',   icon:'i-sun'},
+  {id:'money',  name:'记账',  sub:'Ledger',  icon:'i-wallet'},
+  {id:'habits', name:'习惯',  sub:'Ritual',  icon:'i-leaf'},
+  {id:'fitness',name:'健身',  sub:'Body',    icon:'i-pulse'},
+  {id:'agenda', name:'日程',  sub:'Agenda',  icon:'i-cal'},
+  {id:'buy',    name:'待买',  sub:'Wishlist',icon:'i-bag'},
+  {id:'media',  name:'书影音',sub:'Library', icon:'i-book'},
+  {id:'data',   name:'数据',  sub:'Archive', icon:'i-db'}
+];
+
+const OUT_CATS=['餐饮','交通','居住','购物','健康','娱乐','学习','人情','其他'];
+const IN_CATS=['工资','副业','理财','其他'];
+const CAT_CLASS=['c1','c2','c3','c4','c5','c6'];
+const HABIT_COLORS=['#5C7157','#A9552F','#A98A4B','#4C6472','#8B6E63'];
+const WEEK=['周日','周一','周二','周三','周四','周五','周六'];
+const MEDIA_TYPE={book:{label:'书',unit:'本'},movie:{label:'影',unit:'部'},music:{label:'音',unit:'张'}};
+const MEDIA_STATUS={wish:'想',doing:'在',done:'已'};
+const STATUS_LABEL={book:{wish:'想读',doing:'在读',done:'读完'},movie:{wish:'想看',doing:'在看',done:'看完'},music:{wish:'想听',doing:'在听',done:'听完'}};
+const DAY_NAMES=['周一','周二','周三','周四','周五','周六','周日'];
+
+/* ---------- 小工具 ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const pad2=n=>String(n).padStart(2,'0');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const iso=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+const todayISO=()=>iso(new Date());
+const parseD=s=>{const p=String(s||'').split('-').map(Number);return new Date(p[0]||1970,(p[1]||1)-1,p[2]||1);};
+const addDays=(s,n)=>{const d=parseD(s);d.setDate(d.getDate()+n);return iso(d);};
+const diffDays=(a,b)=>Math.round((parseD(b)-parseD(a))/86400000);
+const weekdayCN=s=>WEEK[parseD(s).getDay()];
+const monthKey=s=>String(s||'').slice(0,7);
+const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0;};
+const money=n=>{const v=Math.abs(num(n));const s=v.toLocaleString('zh-CN',{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2});return '¥'+s;};
+const round1=n=>Math.round(num(n)*10)/10;
+function dateCN(s,withYear){
+  const d=parseD(s);
+  if(!s) return '未定';
+  return (withYear?`${d.getFullYear()}年`:'')+`${d.getMonth()+1}月${d.getDate()}日 ${weekdayCN(s)}`;
+}
+function hashStr(s){let h=0;for(let i=0;i<String(s).length;i++)h=(h*31+String(s).charCodeAt(i))|0;return Math.abs(h);}
+function relTime(s){
+  if(!s) return '未设置';
+  const d=diffDays(s,todayISO());
+  if(d===0) return '今天';
+  if(d===1) return '昨天';
+  if(d===-1) return '明天';
+  if(d>1&&d<7) return d+' 天前';
+  if(d<0&&d>-8) return (-d)+' 天后';
+  return dateCN(s,false);
+}
+function lastNDays(n){const out=[];for(let i=n-1;i>=0;i--)out.push(addDays(todayISO(),-i));return out;}
+
+/* ---------- 状态 ---------- */
+let state=null;
+let currentView='today';
+let storeOK=true;
+let backupSnoozed=false;
+let saveTimer=null;
+let dirtySinceSnapshot=0;
+
+function blankState(){
+  return {
+    app:APP_ID, version:VERSION, createdAt:new Date().toISOString(),
+    sinceBackup:0, lastBackup:null,
+    settings:{height:172,goalWeight:64,tdee:2100,kcalTarget:1800,budget:8000},
+    budgets:{}, tx:[], habits:[], body:[], intake:[], plan:[], events:[], shop:[], media:[]
+  };
+}
+
+function normalize(raw){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw)) return null;
+  const known=['settings','tx','habits','body','intake','plan','events','shop','media','budgets'];
+  if(raw.app!==APP_ID && !known.some(k=>k in raw)) return null;
+  const s=blankState();
+  s.createdAt=typeof raw.createdAt==='string'?raw.createdAt:s.createdAt;
+  s.sinceBackup=clamp(num(raw.sinceBackup),0,9999);
+  s.lastBackup=typeof raw.lastBackup==='string'?raw.lastBackup:null;
+  if(raw.settings&&typeof raw.settings==='object'){
+    ['height','goalWeight','tdee','kcalTarget','budget'].forEach(k=>{
+      if(Number.isFinite(Number(raw.settings[k]))&&Number(raw.settings[k])>0) s.settings[k]=Number(raw.settings[k]);
+    });
+  }
+  if(raw.budgets&&typeof raw.budgets==='object'&&!Array.isArray(raw.budgets)){
+    Object.keys(raw.budgets).forEach(k=>{
+      if(/^\d{4}-\d{2}$/.test(k)&&Number.isFinite(Number(raw.budgets[k]))) s.budgets[k]=Number(raw.budgets[k]);
+    });
+  }
+  const arr=k=>Array.isArray(raw[k])?raw[k].filter(o=>o&&typeof o==='object'):[];
+  s.tx=arr('tx').filter(o=>o.amount!=null).map(o=>({
+    id:o.id||uid(), kind:o.kind==='in'?'in':'out', amount:Math.abs(num(o.amount)),
+    cat:o.cat||'其他', note:String(o.note||'').slice(0,120),
+    date:/^\d{4}-\d{2}-\d{2}$/.test(o.date)?o.date:todayISO(), demo:!!o.demo
+  }));
+  s.habits=arr('habits').filter(o=>o.name).map(o=>({
+    id:o.id||uid(), name:String(o.name).slice(0,40),
+    type:['check','count','number'].includes(o.type)?o.type:'check',
+    target:num(o.target)>0?num(o.target):(o.type==='count'?1:0),
+    unit:String(o.unit||'').slice(0,8),
+    color:/^#[0-9a-fA-F]{6}$/.test(String(o.color||''))?o.color:HABIT_COLORS[0],
+    log:(o.log&&typeof o.log==='object'&&!Array.isArray(o.log))?o.log:{}, demo:!!o.demo
+  }));
+  s.body=arr('body').filter(o=>num(o.weight)>0).map(o=>({
+    id:o.id||uid(), date:/^\d{4}-\d{2}-\d{2}$/.test(o.date)?o.date:todayISO(),
+    weight:round1(o.weight), bodyfat:num(o.bodyfat)>0?round1(o.bodyfat):0, demo:!!o.demo
+  })).sort((a,b)=>a.date.localeCompare(b.date));
+  s.intake=arr('intake').filter(o=>o.date).map(o=>({
+    id:o.id||uid(), date:o.date, kcal:Math.round(num(o.kcal)), demo:!!o.demo
+  }));
+  s.plan=arr('plan').filter(o=>o.text).map(o=>({
+    id:o.id||uid(), day:clamp(Math.round(num(o.day))||1,1,7),
+    text:String(o.text).slice(0,60), done:!!o.done, demo:!!o.demo
+  }));
+  s.events=arr('events').filter(o=>o.title).map(o=>({
+    id:o.id||uid(), title:String(o.title).slice(0,80),
+    date:/^\d{4}-\d{2}-\d{2}$/.test(o.date)?o.date:todayISO(),
+    time:/^\d{2}:\d{2}$/.test(o.time)?o.time:'', tag:o.tag||'生活',
+    done:!!o.done, demo:!!o.demo
+  }));
+  s.shop=arr('shop').filter(o=>o.name).map(o=>({
+    id:o.id||uid(), name:String(o.name).slice(0,60), price:Math.max(0,num(o.price)),
+    qty:Math.max(1,Math.round(num(o.qty)||1)), cat:String(o.cat||'日常').slice(0,12),
+    note:String(o.note||'').slice(0,80), done:!!o.done, demo:!!o.demo
+  }));
+  s.media=arr('media').filter(o=>o.title).map(o=>({
+    id:o.id||uid(), title:String(o.title).slice(0,80), creator:String(o.creator||'').slice(0,60),
+    type:MEDIA_TYPE[o.type]?o.type:'book', status:STATUS_LABEL.book[o.status]?o.status:'wish',
+    rating:clamp(Math.round(num(o.rating)),0,5), review:String(o.review||'').slice(0,600),
+    cover:/^data:image\/(jpeg|png|webp);base64,/.test(String(o.cover||''))?o.cover:null,
+    added:/^\d{4}-\d{2}-\d{2}$/.test(o.added)?o.added:todayISO(), demo:!!o.demo
+  }));
+  // 去掉重复 id
+  ['tx','habits','body','plan','events','shop','media','intake'].forEach(k=>{
+    const seen=new Set();
+    s[k]=s[k].filter(o=>{const id=o.id||uid();if(seen.has(id))return false;seen.add(id);o.id=id;return true;});
+  });
+  return s;
+}
+
+/* ---------- 存储 ---------- */
+function setStore(level,text){
+  const box=$('#storeState'); if(!box) return;
+  box.classList.remove('is-warn','is-fail');
+  if(level==='warn')box.classList.add('is-warn');
+  if(level==='fail')box.classList.add('is-fail');
+  const t=$('#storeText'); if(t) t.textContent=text;
+}
+function save(){
+  if(!state) return;
+  if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
+  let raw;
+  try{ raw=JSON.stringify(state); }
+  catch(e){ setStore('fail','序列化失败'); toast('数据序列化失败：'+e.message,'err'); return; }
+  try{
+    localStorage.setItem(KEY,raw);
+    storeOK=true;
+    setStore('ok','本地已保存 '+new Date().toLocaleTimeString('zh-CN',{hour12:false}));
+    dirtySinceSnapshot++;
+    if(dirtySinceSnapshot>=8){dirtySinceSnapshot=0;try{localStorage.setItem(BAK,raw);}catch(_){}}
+  }catch(e){
+    storeOK=false;
+    const quota=e&&(e.name==='QuotaExceededError'||e.code===22);
+    setStore('fail',quota?'存储空间不足':'保存被拒绝');
+    toast(quota?'本地存储空间不足，最新改动只在内存中。建议导出备份并删除部分封面图片。':'浏览器拒绝写入本地存储，请检查隐私模式设置。','err',6000);
+  }
+}
+function saveSoon(){ if(saveTimer)clearTimeout(saveTimer); saveTimer=setTimeout(save,160); }
+function bump(n=1){
+  state.sinceBackup=clamp(num(state.sinceBackup)+n,0,9999);
+  if(state.sinceBackup%BACKUP_EVERY===0) backupSnoozed=false;
+  save();
+}
+function bytesUsed(){
+  try{const raw=localStorage.getItem(KEY)||'';return new Blob([raw]).size;}catch(e){return 0;}
+}
+
+/* ---------- 提示 ---------- */
+function toast(msg,type='',ms=2600,action){
+  const box=$('#toasts'); if(!box) return;
+  const el=document.createElement('div');
+  el.className='toast '+type+(action?' ready':'');
+  const icon=type==='err'?'i-alert':type==='warn'?'i-alert':'i-check';
+  el.innerHTML=`<svg><use href="#${icon}"/></svg><span class="tx">${esc(msg)}</span>`;
+  if(action){
+    const b=document.createElement('button');
+    b.textContent=action.label;
+    b.onclick=()=>{action.fn();el.remove();};
+    el.appendChild(b);
+  }
+  box.appendChild(el);
+  const ttl=ms+(action?2600:0);
+  setTimeout(()=>{el.style.transition='opacity .3s,transform .3s';el.style.opacity='0';el.style.transform='translateY(6px)';setTimeout(()=>el.remove(),320);},ttl);
+}
+
+function openModal(html,opts={}){
+  const root=$('#modalRoot');
+  root.innerHTML=`<div class="modal-mask" data-mask><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  document.body.classList.add('modal-open');
+  const mask=$('[data-mask]',root);
+  mask.addEventListener('mousedown',e=>{if(e.target===mask)closeModal();});
+  document.addEventListener('keydown',escClose);
+  if(opts.after) opts.after(root);
+}
+function closeModal(){
+  const root=$('#modalRoot'); if(!root) return;
+  root.innerHTML='';
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown',escClose);
+}
+function escClose(e){ if(e.key==='Escape') closeModal(); }
+function confirmModal(title,desc,okLabel,onOk,danger){
+  openModal(`<div class="modal-head"><div><h3>${esc(title)}</h3><p class="hint">${esc(desc||'')}</p></div><button class="btn quiet x" data-act="modal-close" aria-label="关闭"><svg><use href="#i-x"/></svg></button></div>
+    <div class="modal-foot" style="padding-top:16px"><span class="spacer"></span><button class="btn ghost" data-act="modal-close">取消</button><button class="btn ${danger?'danger':''}" id="confirmOk">${esc(okLabel||'确定')}</button></div>`,{
+    after(root){ $('#confirmOk',root).onclick=()=>{closeModal();onOk&&onOk();}; }
+  });
+}
+
+/* ---------- 路由 ---------- */
+function renderNav(){
+  const nav=VIEWS.map((v,i)=>`<button class="nav-item" data-act="nav" data-view="${v.id}" aria-current="false">
+      <svg><use href="#${v.icon}"/></svg><span>${v.name}</span><span class="idx">${pad2(i+1)}</span></button>`).join('');
+  const tab=VIEWS.map(v=>`<button class="tab" data-act="nav" data-view="${v.id}" aria-current="false">
+      <svg><use href="#${v.icon}"/></svg><span>${v.name}</span></button>`).join('');
+  $('#railNav').innerHTML=nav;
+  $('#tabbar').innerHTML=tab;
+}
+function go(view,replace){
+  if(!VIEWS.some(v=>v.id===view)) view='today';
+  currentView=view;
+  $$('.nav-item,.tab').forEach(b=>b.setAttribute('aria-current',String(b.dataset.view===view)));
+  const meta=VIEWS.find(v=>v.id===view);
+  $('#tbTitle').textContent=meta.name;
+  $('#tbSub').textContent=meta.sub;
+  $$('.view').forEach(s=>s.classList.toggle('is-active',s.dataset.view===view));
+  render();
+  if(replace){ try{history.replaceState(null,'','#'+view);}catch(e){} }
+  else{ try{history.pushState(null,'','#'+view);}catch(e){} }
+  window.scrollTo({top:0,behavior:'instant'in document.documentElement.style?'instant':'auto'});
+}
+
+/* ---------- 渲染入口 ---------- */
+function render(){
+  if(!state) return;
+  const pane=$('#pane-'+currentView);
+  if(!pane) return;
+  const fn={today:renderToday,money:renderMoney,habits:renderHabits,fitness:renderFitness,
+    agenda:renderAgenda,buy:renderBuy,media:renderMedia,data:renderData}[currentView];
+  pane.innerHTML=backupBannerHTML()+(fn?fn():'');
+  const d=new Date();
+  $('#railDate').textContent=`${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} · ${WEEK[d.getDay()]}`;
+  $('#tbDate').textContent=`${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} ${WEEK[d.getDay()]}`;
+}
+function backupBannerHTML(){
+  if(!backupSnoozed && num(state.sinceBackup)>=BACKUP_EVERY){
+    return `<div class="banner"><svg><use href="#i-alert"/></svg>
+      <span>已新增 <b>${state.sinceBackup}</b> 条记录，建议导出一份 JSON 备份。</span>
+      <div class="b-actions"><button data-act="export-json">立即备份</button><button data-act="backup-later">稍后</button></div></div>`;
+  }
+  if(!storeOK){
+    return `<div class="banner err"><svg><use href="#i-alert"/></svg>
+      <span>本地保存失败，最新记录可能丢失。请导出 JSON 备份后再继续。</span>
+      <div class="b-actions"><button data-act="export-json">导出备份</button></div></div>`;
+  }
+  return '';
+}
+
+/* ---------- 今日生活指数 ---------- */
+function habitDayValue(h,date){
+  const v=num(h.log&&h.log[date]);
+  return v;
+}
+function habitDone(h,date){
+  const v=habitDayValue(h,date);
+  if(h.type==='check') return v>0;
+  if(h.type==='count') return v>=Math.max(1,num(h.target)||1);
+  return v>0 && (num(h.target)>0 ? v>=num(h.target) : true);
+}
+function habitRatio(h,date){
+  const v=habitDayValue(h,date);
+  if(h.type==='check') return v>0?1:0;
+  const t=num(h.target)||1;
+  return clamp(v/t,0,1);
+}
+function lifeIndex(){
+  const t=todayISO();
+  const hs=state.habits;
+  const habitScore=hs.length?Math.round(hs.reduce((a,h)=>a+habitRatio(h,t),0)/hs.length*100):62;
+  const evs=state.events.filter(e=>e.date===t);
+  const doneEvRatio=evs.length?evs.filter(e=>e.done).length/evs.length:0;
+  const agendaScore=evs.length?Math.round(55+45*doneEvRatio):68;
+  const mk=monthKey(t);
+  const spent=state.tx.filter(x=>x.kind==='out'&&monthKey(x.date)===mk).reduce((a,x)=>a+x.amount,0);
+  const bud=budgetOf(mk);
+  let moneyScore=70;
+  if(bud>0){
+    const d=parseD(t), dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    const pace=d.getDate()/dim;
+    const ratio=spent/bud/Math.max(.15,pace);
+    moneyScore=ratio<=1?Math.round(94+6*(1-Math.min(1,ratio))):Math.round(clamp(94-(ratio-1)*40,20,94));
+  }
+  const last=state.body.length?state.body[state.body.length-1]:null;
+  let bodyScore=48;
+  if(last){
+    const stale=Math.max(0,diffDays(last.date,t));
+    const fresh=stale<=1?30:stale<=3?22:stale<=7?12:4;
+    let trend=0;
+    if(state.body.length>=2){
+      const prev=state.body[state.body.length-2];
+      const delta=last.weight-prev.weight;
+      const goal=num(state.settings.goalWeight);
+      const lastDist=Math.abs(prev.weight-goal), nowDist=Math.abs(last.weight-goal);
+      trend=nowDist<lastDist?12:nowDist>lastDist?-10:delta<0?6:0;
+    }
+    bodyScore=clamp(48+fresh+trend,10,100);
+  }
+  const parts=[
+    {key:'habits',label:'自律',score:habitScore,weight:.3,color:''},
+    {key:'agenda',label:'秩序',score:agendaScore,weight:.25,color:'gold'},
+    {key:'money',label:'财务',score:moneyScore,weight:.25,color:'clay'},
+    {key:'body',label:'身体',score:bodyScore,weight:.2,color:'sage'}
+  ];
+  const total=Math.round(parts.reduce((a,p)=>a+p.score*p.weight,0));
+  const label=total>=85?'从容':total>=72?'平稳':total>=58?'将就':'紧绷';
+  const weakest=parts.slice().sort((a,b)=>a.score-b.score)[0];
+  const tips={
+    habits:`还有 ${hs.filter(h=>!habitDone(h,t)).length} 个习惯未完成，先挑一个最容易的开始。`,
+    agenda:`今天有 ${evs.filter(e=>!e.done).length} 件日程待处理，理清顺序比赶进度更重要。`,
+    money:bud>0?(spent>bud?`本月支出已超出预算 ${money(spent-bud)}，接下来收一收。`:`按当前节奏，本月预算还有 ${money(Math.max(0,bud-spent))} 余量。`):'给这个月设一个预算，花钱会更有分寸。',
+    body:last?`距上次记录体重 ${diffDays(last.date,t)} 天，称一次，趋势比单日数字重要。`:'还没有体重记录，先留一个起点。'
+  };
+  return {total,label,parts,tip:tips[weakest.key],weakest};
+}
+
+/* ---------- 共用片段 ---------- */
+function budgetOf(mk){
+  const v=state.budgets[mk];
+  return (v!=null&&Number.isFinite(Number(v)))?Number(v):num(state.settings.budget);
+}
+function sumBy(arr,fn){return arr.reduce((a,x)=>a+num(fn(x)),0);}
+function habitStreak(h){
+  let n=0,d=todayISO();
+  if(!habitDone(h,d)) d=addDays(d,-1);
+  while(habitDone(h,d)&&n<400){n++;d=addDays(d,-1);}
+  return n;
+}
+function habitTargetText(h){
+  if(h.type==='check') return '每日勾选';
+  if(h.type==='count') return `目标 ${num(h.target)||1} ${esc(h.unit||'次')}`;
+  return num(h.target)>0?`目标 ${num(h.target)} ${esc(h.unit||'')}`:'记录数值';
+}
+function habitControlHTML(h,date){
+  const v=habitDayValue(h,date);
+  if(h.type==='check'){
+    const on=v>0;
+    return `<button class="btn ${on?'ghost':''} sm" data-act="habit-check" data-id="${h.id}" data-date="${date}" aria-pressed="${on}">
+      <svg><use href="#i-check"/></svg>${on?'已完成':'打卡'}</button>`;
+  }
+  if(h.type==='count'){
+    return `<div class="stepper">
+      <button type="button" data-act="habit-step" data-id="${h.id}" data-date="${date}" data-step="-1" aria-label="减少">−</button>
+      <span class="val">${v||0}<small>/${num(h.target)||1}${esc(h.unit||'')}</small></span>
+      <button type="button" data-act="habit-step" data-id="${h.id}" data-date="${date}" data-step="1" aria-label="增加">+</button>
+    </div>`;
+  }
+  return `<div class="habit-num"><input class="input" type="number" step="0.1" inputmode="decimal" data-act="habit-number" data-id="${h.id}" data-date="${date}" value="${v||''}" placeholder="—" aria-label="${esc(h.name)}今日数值"><span class="mini">${esc(h.unit||'')}</span></div>`;
+}
+function checkBtn(on,act,attrs=''){
+  return `<button class="check" role="checkbox" aria-checked="${on?1:0}" data-act="${act}" ${attrs} aria-label="切换完成"><svg><use href="#i-check"/></svg></button>`;
+}
+function emptyHTML(title,desc){
+  return `<div class="empty"><strong>${esc(title)}</strong>${esc(desc||'')}</div>`;
+}
+function isoWeek(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=t.getUTCDay()||7;
+  t.setUTCDate(t.getUTCDate()+4-day);
+  const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil((((t-y0)/86400000)+1)/7);
+}
+
+/* ---------- 今日 ---------- */
+function renderToday(){
+  const li=lifeIndex(),t=todayISO(),mk=monthKey(t);
+  const bud=budgetOf(mk);
+  const spent=sumBy(state.tx.filter(x=>x.kind==='out'&&monthKey(x.date)===mk),x=>x.amount);
+  const income=sumBy(state.tx.filter(x=>x.kind==='in'&&monthKey(x.date)===mk),x=>x.amount);
+  const evs=state.events.filter(e=>e.date===t).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+  const doneEv=evs.filter(e=>e.done).length;
+  const hs=state.habits;
+  const doneH=hs.filter(h=>habitDone(h,t)).length;
+  const latest=state.body.length?state.body[state.body.length-1]:null;
+  const goal=num(state.settings.goalWeight);
+  const toGoal=latest?round1(latest.weight-goal):null;
+  const d=new Date();
+  const recentTx=state.tx.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+  const doingMedia=state.media.filter(m=>m.status==='doing').slice(0,3);
+  const shopLeft=state.shop.filter(s=>!s.done);
+  const shopTotal=sumBy(shopLeft,s=>s.price*s.qty);
+  return `
+  <div class="hero">
+    <div>
+      <div class="hero-date">${dateCN(t,true)} · 第 ${isoWeek(d)} 周</div>
+      <div class="hero-score"><span class="hero-num">${li.total}</span><span class="hero-den">/ 100</span></div>
+      <div class="hero-label">今日生活指数<span class="badge-sep"></span>${li.label}</div>
+      <p class="hero-tip">${esc(li.tip)}</p>
+    </div>
+    <div class="dims">
+      ${li.parts.map(p=>`<div class="dim">
+        <div class="dim-top"><span>${p.label}</span><span class="v">${p.score}</span></div>
+        <div class="dim-track"><div class="dim-fill ${p.color}" style="width:${clamp(p.score,0,100)}%"></div></div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="quick">
+    <div class="qcell">
+      <div class="k">本月支出</div>
+      <div class="v">${money(spent)}</div>
+      <div class="d">${bud>0?(spent>bud?'超预算 '+money(spent-bud):'预算余 '+money(bud-spent)):'尚未设预算'}</div>
+    </div>
+    <div class="qcell sage">
+      <div class="k">今日打卡</div>
+      <div class="v">${doneH}<small>/ ${hs.length||0}</small></div>
+      <div class="d">${hs.length?`完成率 ${Math.round(doneH/hs.length*100)}%`:'还没有习惯'}</div>
+    </div>
+    <div class="qcell clay">
+      <div class="k">体重</div>
+      <div class="v">${latest?round1(latest.weight):'—'}<small>kg</small></div>
+      <div class="d">${latest?(toGoal>0?`距目标还差 ${toGoal} kg`:(toGoal<0?`已低于目标 ${Math.abs(toGoal)} kg`:'正好达标')):'记录一次起点'}</div>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:30px">
+    <section>
+      <div class="sec-head">
+        <h2>今日日程</h2>
+        <span class="sec-note">${doneEv}/${evs.length||0}</span>
+        <div class="sec-actions"><button class="btn quiet sm" data-act="nav" data-view="agenda">统筹 →</button></div>
+      </div>
+      ${evs.length?`<div class="rows">${evs.map(e=>`
+        <div class="row ${e.done?'done':''}">
+          ${checkBtn(e.done,'toggle-event',`data-id="${e.id}"`)}
+          <span class="ev-time ${!e.done&&e.time&&e.time<new Date().toTimeString().slice(0,5)?'over':''}">${esc(e.time||'—')}</span>
+          <div class="grow"><div class="t">${esc(e.title)}</div><div class="meta"><span class="tag">${esc(e.tag)}</span></div></div>
+        </div>`).join('')}</div>`
+      :emptyHTML('今天还没有安排','留白也是安排。去日程里加一件真正重要的事。')}
+    </section>
+    <section>
+      <div class="sec-head">
+        <h2>今日习惯</h2>
+        <span class="sec-note">${hs.length?Math.round(doneH/hs.length*100)+'%':'—'}</span>
+        <div class="sec-actions"><button class="btn quiet sm" data-act="nav" data-view="habits">全部 →</button></div>
+      </div>
+      ${hs.length?`<div class="rows">${hs.slice(0,5).map(h=>`
+        <div class="row">
+          <span class="cat-dot" style="background:${esc(h.color)}"></span>
+          <div class="grow"><div class="t">${esc(h.name)}</div><div class="meta">${habitTargetText(h)}</div></div>
+          ${habitControlHTML(h,t)}
+        </div>`).join('')}</div>`
+      :emptyHTML('习惯还没建立','从一件小到不会失败的事开始，比如喝水 8 杯。')}
+    </section>
+  </div>
+
+  <div class="g2" style="margin-top:28px">
+    <section class="sec">
+      <div class="sec-head"><h2>最近收支</h2><span class="sec-note">结余 ${money(income-spent)}</span>
+        <div class="sec-actions"><button class="btn quiet sm" data-act="nav" data-view="money">账本 →</button></div></div>
+      ${recentTx.length?`<div class="rows">${recentTx.map(x=>`
+        <div class="row">
+          <span class="cat-dot ${CAT_CLASS[OUT_CATS.indexOf(x.cat)%6]||''}"></span>
+          <div class="grow"><div class="t">${esc(x.note||x.cat)}</div><div class="meta"><span>${esc(x.cat)}</span><span>${relTime(x.date)}</span></div></div>
+          <span class="amt ${x.kind==='in'?'in':'out'}">${x.kind==='in'?'+':'−'}${money(x.amount).slice(1)}</span>
+        </div>`).join('')}</div>`
+      :emptyHTML('账本还是空的','记下第一笔，月底的数字才有意义。')}
+    </section>
+    <section class="sec">
+      <div class="sec-head"><h2>在追的书影音</h2><span class="sec-note">${state.media.filter(m=>m.status==='doing').length} 项</span>
+        <div class="sec-actions"><button class="btn quiet sm" data-act="nav" data-view="media">收藏 →</button></div></div>
+      ${doingMedia.length?`<div class="rows">${doingMedia.map(m=>`
+        <div class="row">
+          <div class="grow"><div class="t">${esc(m.title)}</div><div class="meta"><span>${MEDIA_TYPE[m.type].label}</span><span>${esc(m.creator||'—')}</span></div></div>
+          <span class="stars">${[1,2,3,4,5].map(i=>`<svg class="${i<=m.rating?'on':''}"><use href="#i-star"/></svg>`).join('')}</span>
+        </div>`).join('')}</div>`
+      :emptyHTML('还没有在追的作品','一本书、一部电影，慢慢来。')}
+      <div class="hr"></div>
+      <div class="stat-inline">
+        <span>待买 <b>${shopLeft.length}</b> 件</span>
+        <span>预计 <b>${money(shopTotal)}</b></span>
+        <span>收藏 <b>${state.media.length}</b> 部</span>
+      </div>
+    </section>
+  </div>`;
+}
+/* ---------- 习惯 ---------- */
+let habitForm={type:'check',color:HABIT_COLORS[0]};
+function renderHabits(){
+  const t=todayISO();
+  const hs=state.habits;
+  const done=hs.filter(h=>habitDone(h,t)).length;
+  const month30=lastNDays(30);
+  const avg=hs.length?Math.round(sumBy(hs,h=>sumBy(month30,d=>habitRatio(h,d)))/ (hs.length*30)*100):0;
+  const bestStreak=hs.length?Math.max(...hs.map(habitStreak)):0;
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Ritual · 每日</div>
+      <h1>习惯健康</h1>
+      <div class="sub">不追求连续，只追求回来。</div>
+    </div>
+    <div class="head-right">
+      <div class="stat-inline">
+        <span>今日 <b>${done}/${hs.length}</b></span>
+        <span>30 天完成率 <b>${avg}%</b></span>
+        <span>最长连续 <b>${bestStreak}</b> 天</span>
+      </div>
+    </div>
+  </div>
+
+  ${hs.length?`<div class="habit-grid">
+    ${hs.map(h=>{
+      const streak=habitStreak(h);
+      return `<article class="habit" style="--hc:${esc(h.color)}">
+        <div class="habit-top">
+          <div style="min-width:0">
+            <div class="habit-name" style="color:${esc(h.color)}">${esc(h.name)}</div>
+            <div class="habit-meta">${habitTargetText(h)} · 连续 ${streak} 天</div>
+          </div>
+          <div class="tools">
+            <button class="btn quiet sm" data-act="del-habit" data-id="${h.id}" aria-label="删除习惯"><svg><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+        <div class="habit-ctl">
+          ${habitControlHTML(h,t)}
+          <div class="habit-prog">
+            <div class="pt"><span>今日</span><span>${Math.round(habitRatio(h,t)*100)}%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.max(1,habitRatio(h,t)*100)}%;background:${esc(h.color)}"></div></div>
+          </div>
+        </div>
+        <div class="heat">
+          ${month30.map(d=>{
+            const r=habitRatio(h,d);
+            const lv=r<=0?0:r<.34?1:r<.67?2:r<1?3:4;
+            const v=habitDayValue(h,d);
+            return `<div class="heat-cell ${d===t?'is-today':''}" data-lv="${lv}" title="${esc(d)} · ${v||0}${esc(h.unit||'')}"></div>`;
+          }).join('')}
+        </div>
+        <div class="heat-foot"><span>${month30[0].slice(5).replace('-','.')}</span><span>30 天热力图 · 今天</span></div>
+      </article>`;
+    }).join('')}
+  </div>`:emptyHTML('还没有习惯','从下面加一个，明天就有痕迹可看。')}
+
+  <section class="sec" style="margin-top:30px">
+    <div class="sec-head"><h2>新建习惯</h2><span class="sec-note">三种打卡方式</span></div>
+    <form data-form="habit" autocomplete="off">
+      <div class="form-grid c3">
+        <label class="field"><span>名称</span><input class="input" name="name" maxlength="20" placeholder="例如 早起 / 喝水 / 睡眠" required></label>
+        <label class="field"><span>打卡方式</span>
+          <select class="input" name="type">
+            <option value="check" ${habitForm.type==='check'?'selected':''}>勾选 · 完成即打卡</option>
+            <option value="count" ${habitForm.type==='count'?'selected':''}>计数 · 累计次数</option>
+            <option value="number" ${habitForm.type==='number'?'selected':''}>数值 · 记录读数</option>
+          </select>
+        </label>
+        <label class="field"><span>目标值（数值型可填 7.5）</span><input class="input" name="target" type="number" step="0.1" min="0" placeholder="计数/数值型填写"></label>
+        <label class="field"><span>单位</span><input class="input" name="unit" maxlength="6" placeholder="杯 / 小时 / 次"></label>
+        <div class="field"><span>颜色</span>
+          <div class="picker">
+            ${HABIT_COLORS.map(c=>`<button type="button" data-act="habit-color" data-color="${c}" aria-pressed="${habitForm.color===c}" style="background:${c}" aria-label="颜色 ${c}"></button>`).join('')}
+            <input type="hidden" name="color" value="${habitForm.color}">
+          </div>
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <button class="btn" type="submit" style="align-self:flex-start">加入习惯</button>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px">勾选适合「做了就算完成」，计数适合「每天 8 杯水」，数值适合「睡眠 7.5 小时」。</div>
+    </form>
+  </section>`;
+}
+
+/* ---------- 健身 ---------- */
+function bmiOf(w,h){ if(!w||!h) return null; return w/Math.pow(h/100,2); }
+function bmiLabel(b){
+  if(b==null) return '—';
+  if(b<18.5) return '偏瘦';
+  if(b<24) return '正常';
+  if(b<28) return '偏胖';
+  return '肥胖';
+}
+function movingAvgBody(n=7){
+  const out=[];
+  state.body.forEach((r,i)=>{
+    const start=addDays(r.date,-(n-1));
+    const win=state.body.slice(0,i+1).filter(x=>x.date>=start);
+    out.push({date:r.date,value:win.reduce((a,x)=>a+x.weight,0)/Math.max(1,win.length)});
+  });
+  return out;
+}
+function weightChartSVG(){
+  const rows=state.body.slice(-24);
+  if(rows.length<2) return `<div class="empty" style="border:0"><strong>还画不出趋势</strong>再记录一次体重，曲线就会出现。</div>`;
+  const narrow=window.innerWidth<=640;
+  const W=narrow?380:680,H=narrow?196:228,pl=narrow?30:34,pr=narrow?12:16,pt=narrow?14:18,pb=narrow?24:28;
+  const iw=W-pl-pr, ih=H-pt-pb;
+  const values=rows.map(r=>r.weight);
+  const ma=movingAvgBody(7).slice(-rows.length);
+  const goal=num(state.settings.goalWeight);
+  let min=Math.min(...values),max=Math.max(...values);
+  if(goal>0){min=Math.min(min,goal);max=Math.max(max,goal);}
+  const padV=Math.max(.6,(max-min)*.18);
+  min-=padV;max+=padV;
+  const x=i=>pl+(rows.length===1?iw/2:i*(iw/(rows.length-1)));
+  const y=v=>pt+ih-((v-min)/(max-min))*ih;
+  const line=rows.map((r,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(r.weight).toFixed(1)}`).join(' ');
+  const area=`${line} L${x(rows.length-1).toFixed(1)},${pt+ih} L${x(0).toFixed(1)},${pt+ih} Z`;
+  const maLine=ma.map((r,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(r.value).toFixed(1)}`).join(' ');
+  const grid=[0,.5,1].map(f=>{
+    const v=min+(max-min)*f, yy=y(v);
+    return `<line class="grid-l" x1="${pl}" y1="${yy.toFixed(1)}" x2="${W-pr}" y2="${yy.toFixed(1)}"/><text x="${pl-6}" y="${(yy+3).toFixed(1)}" text-anchor="end">${v.toFixed(1)}</text>`;
+  }).join('');
+  const goalLine=(goal>0&&goal>min&&goal<max)?`<line class="goal-l" x1="${pl}" y1="${y(goal).toFixed(1)}" x2="${W-pr}" y2="${y(goal).toFixed(1)}"/><text x="${W-pr}" y="${(y(goal)-4).toFixed(1)}" text-anchor="end" fill="#B0897F">目标 ${goal}</text>`:'';
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="体重与 7 日均线">
+    ${grid}${goalLine}
+    <path class="chart-area" d="${area}"/>
+    <path class="ma-line" d="${maLine}"/>
+    <path class="w-line" d="${line}"/>
+    ${rows.map((r,i)=>`<circle class="w-dot" cx="${x(i).toFixed(1)}" cy="${y(r.weight).toFixed(1)}" r="2.6"/>`).join('')}
+    <text x="${pl}" y="${H-8}">${rows[0].date.slice(5)}</text>
+    <text x="${W-pr}" y="${H-8}" text-anchor="end">${rows[rows.length-1].date.slice(5)}</text>
+  </svg>`;
+}
+function weightChartTable(){
+  const rows=state.body.slice(-24);
+  if(rows.length<2) return '';
+  const ma=movingAvgBody(7).slice(-rows.length);
+  const last=rows[rows.length-1], prev=rows[rows.length-2];
+  return `<div class="stat-inline" style="margin-top:8px">
+    <span>最新 <b>${round1(last.weight)}</b> kg</span>
+    <span>7 日均线 <b>${round1(ma[ma.length-1].value)}</b> kg</span>
+    <span>较上次 <b class="${last.weight<=prev.weight?'sage':'accent'}">${last.weight>prev.weight?'+':''}${round1(last.weight-prev.weight)}</b> kg</span>
+    <span>最近记录 <b>${relTime(last.date)}</b></span>
+  </div>`;
+}
+function renderFitness(){
+  const t=todayISO();
+  const latest=state.body.length?state.body[state.body.length-1]:null;
+  const first=state.body.length?state.body[0]:null;
+  const h=num(state.settings.height), goal=num(state.settings.goalWeight);
+  const bmi=latest?bmiOf(latest.weight,h):null;
+  const startW=first?first.weight:null;
+  const prog=(startW!=null&&latest&&startW!==goal)?clamp((startW-latest.weight)/(startW-goal)*100,0,100):0;
+  const toGoal=latest?round1(latest.weight-goal):null;
+  const tdee=num(state.settings.tdee), kcalTarget=num(state.settings.kcalTarget);
+  const days=lastNDays(7);
+  const intakeRows=days.map(d=>{
+    const rec=state.intake.find(x=>x.date===d);
+    return {date:d,kcal:rec?num(rec.kcal):null};
+  });
+  const logged=intakeRows.filter(r=>r.kcal!=null);
+  const totalDeficit=sumBy(logged,r=>tdee-r.kcal);
+  const todayIntake=state.intake.find(x=>x.date===t);
+  const maxAbs=Math.max(1,...logged.map(r=>Math.abs(tdee-r.kcal)));
+  const todayIdx=(parseD(t).getDay()+6)%7;
+  const plan=state.plan.slice().sort((a,b)=>a.day-b.day);
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Body · 减脂</div>
+      <h1>减脂健身</h1>
+      <div class="sub">体重是结果，不是判决。</div>
+    </div>
+    <div class="head-right">
+      <button class="btn ghost sm" data-act="fit-settings"><svg><use href="#i-edit"/></svg>身体与热量设置</button>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi"><div class="k">最新体重</div>
+      <div class="v">${latest?round1(latest.weight):'—'}<small>kg</small></div>
+      <div class="s">${latest?`${relTime(latest.date)} · 体脂 ${latest.bodyfat?round1(latest.bodyfat)+'%':'—'}`:'记录第一次体重'}</div></div>
+    <div class="kpi"><div class="k">BMI</div>
+      <div class="v">${bmi?bmi.toFixed(1):'—'}</div>
+      <div class="s">${h?`身高 ${h} cm · ${bmiLabel(bmi)}`:'先在设置里填身高'}</div></div>
+    <div class="kpi"><div class="k">目标进度</div>
+      <div class="v">${Math.round(prog)}<small>%</small></div>
+      <div class="bar-track" style="margin-top:5px"><div class="bar-fill" style="width:${Math.max(1,prog)}%"></div></div>
+      <div class="s">${startW!=null?`${startW} → ${goal} kg`:'目标 ' + goal + ' kg'}</div></div>
+    <div class="kpi"><div class="k">距目标</div>
+      <div class="v">${toGoal!=null?Math.abs(toGoal).toFixed(1):'—'}<small>kg</small></div>
+      <div class="s">${toGoal==null?'还没有起点':toGoal>0?'还需减重':'已达成目标'}</div></div>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head"><h2>体重趋势</h2><span class="sec-note">最近 24 次记录</span></div>
+    <div class="chart-wrap">${weightChartSVG()}</div>
+    <div class="legend"><span><i style="background:#1A1915"></i>体重</span><span><i style="background:#A9552F"></i>7 日均线</span><span><i style="background:#C9A6A0"></i>目标线</span></div>
+    ${weightChartTable()}
+  </section>
+
+  <div class="g2" style="margin-top:26px">
+    <section>
+      <div class="sec-head"><h2>记录身体</h2><span class="sec-note">体重 · 体脂</span></div>
+      <form data-form="body" autocomplete="off">
+        <div class="form-grid c3">
+          <label class="field"><span>日期</span><input class="input" type="date" name="date" value="${t}" required></label>
+          <label class="field"><span>体重 kg</span><input class="input" type="number" name="weight" step="0.1" min="20" max="300" inputmode="decimal" placeholder="65.0" required></label>
+          <label class="field"><span>体脂 %（可选）</span><input class="input" type="number" name="bodyfat" step="0.1" min="1" max="70" inputmode="decimal" placeholder="22.0"></label>
+        </div>
+        <div class="form-actions"><button class="btn" type="submit">保存记录</button><span class="hint">同一天再次记录会覆盖当日数据</span></div>
+      </form>
+      ${state.body.length?`<div class="rows" style="margin-top:14px">
+        ${state.body.slice(-5).reverse().map(r=>`
+          <div class="row">
+            <span class="cat-dot sage" style="background:#5C7157"></span>
+            <div class="grow"><div class="t">${round1(r.weight)} kg</div><div class="meta"><span>${dateCN(r.date,false)}</span>${r.bodyfat?`<span>体脂 ${round1(r.bodyfat)}%</span>`:''}</div></div>
+            <button class="btn quiet sm del" data-act="del-body" data-id="${r.id}" aria-label="删除记录"><svg><use href="#i-trash"/></svg></button>
+          </div>`).join('')}
+      </div>`:''}
+    </section>
+    <section>
+      <div class="sec-head"><h2>热量缺口</h2><span class="sec-note">每日消耗 ${tdee} kcal</span></div>
+      <div class="kv">
+        <dt>今日摄入</dt><dd>${todayIntake?num(todayIntake.kcal)+' kcal':'未记录'}</dd>
+        <dt>今日缺口</dt><dd>${todayIntake?(tdee-num(todayIntake.kcal)>=0?'<span class="sage">−'+(tdee-num(todayIntake.kcal))+' kcal</span>':'<span class="accent">+'+(num(todayIntake.kcal)-tdee)+' kcal</span>'):'—'}</dd>
+        <dt>7 日累计</dt><dd>${logged.length?`${totalDeficit>=0?'缺口 ':'盈余 '}${Math.abs(totalDeficit)} kcal`:'—'}</dd>
+        <dt>预计变化</dt><dd>${logged.length?`${totalDeficit>=0?'−':'+'}${Math.abs(totalDeficit/7700).toFixed(2)} kg 脂肪`:'—'}</dd>
+      </div>
+      <form data-form="intake" class="form-grid c2" style="margin-top:14px">
+        <label class="field"><span>今日摄入 kcal</span><input class="input" type="number" name="kcal" min="0" max="8000" inputmode="numeric" value="${todayIntake?num(todayIntake.kcal):''}" placeholder="${kcalTarget}"></label>
+        <div class="field" style="justify-content:flex-end"><button class="btn ghost" type="submit">记录摄入</button></div>
+      </form>
+      <div class="deficit">
+        ${intakeRows.map(r=>{
+          const diff=r.kcal==null?null:tdee-r.kcal;
+          const hgt=diff==null?0:clamp(Math.abs(diff)/maxAbs*100,3,100);
+          return `<div class="dbar ${diff!=null&&diff<0?'neg':''}">
+            <i style="height:${hgt}%"></i><span>${r.date.slice(8)}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="legend"><span><i style="background:#5C7157"></i>缺口</span><span><i style="background:#A9552F"></i>盈余</span></div>
+      <div class="hint" style="margin-top:8px">7700 kcal ≈ 1 kg 脂肪。缺口过大时，优先保证蛋白质与睡眠。</div>
+    </section>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head"><h2>本周训练计划</h2><span class="sec-note">可自定义 · ${plan.filter(p=>p.done).length}/${plan.length}</span></div>
+    <div class="plan-board">
+      ${DAY_NAMES.map((dn,i)=>{
+        const items=plan.filter(p=>p.day===i+1);
+        return `<div class="plan-day ${i===todayIdx?'is-today':''}">
+          <div class="dh"><b>${dn}</b><span>${addDays(t, i-todayIdx).slice(8)}</span></div>
+          <ul>
+            ${items.map(p=>`<li class="plan-item ${p.done?'done':''}">
+              <button class="pc" role="checkbox" aria-checked="${p.done?1:0}" data-act="plan-toggle" data-id="${p.id}" aria-label="切换"></button>
+              <span>${esc(p.text)}</span>
+              <button class="x" data-act="del-plan" data-id="${p.id}" aria-label="删除">×</button>
+            </li>`).join('')}
+          </ul>
+          <button class="addp" data-act="plan-focus" data-day="${i+1}">＋ 添加</button>
+        </div>`;
+      }).join('')}
+    </div>
+    <form class="plan-add" data-form="plan" autocomplete="off">
+      <select class="input" name="day" aria-label="星期">
+        ${DAY_NAMES.map((d,i)=>`<option value="${i+1}" ${i===todayIdx?'selected':''}>${d}</option>`).join('')}
+      </select>
+      <input class="input" name="text" maxlength="40" placeholder="例如 力量训练 45 分钟 / 快走 6 公里" required>
+      <button class="btn ghost" type="submit">加入</button>
+    </form>
+  </section>`;
+}
+/* ---------- 日程 ---------- */
+let calView={month:monthKey(todayISO()),sel:todayISO()};
+function renderAgenda(){
+  const key=calView.month, sel=calView.sel, t=todayISO();
+  const [y,m]=key.split('-').map(Number);
+  const offset=(new Date(y,m-1,1).getDay()+6)%7;
+  const start=addDays(`${y}-${pad2(m)}-01`,-offset);
+  const daysIn=new Date(y,m,0).getDate();
+  const total=Math.ceil((offset+daysIn)/7)*7;
+  const byDate={};
+  state.events.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
+  const cells=[];
+  for(let i=0;i<total;i++){
+    const d=addDays(start,i);
+    cells.push({date:d,out:monthKey(d)!==key});
+  }
+  const selEvents=(byDate[sel]||[]).slice().sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+  const upcoming=state.events.filter(e=>!e.done&&e.date>=t).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+  const buckets=[
+    {label:'今天',list:upcoming.filter(e=>e.date===t)},
+    {label:'明天',list:upcoming.filter(e=>e.date===addDays(t,1))},
+    {label:'未来 7 天',list:upcoming.filter(e=>e.date>addDays(t,1)&&e.date<=addDays(t,7))},
+    {label:'更远',list:upcoming.filter(e=>e.date>addDays(t,7))}
+  ].filter(b=>b.list.length);
+  const overdue=state.events.filter(e=>!e.done&&e.date<t).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+  const tagOpts=['工作','生活','健康','学习','其他'];
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Agenda · 统筹</div>
+      <h1>日程统筹</h1>
+      <div class="sub">把重要的事放进日历，而不是放进焦虑里。</div>
+    </div>
+    <div class="head-right">
+      <div class="stat-inline"><span>今日 <b>${(byDate[t]||[]).filter(e=>!e.done).length}</b> 项待办</span><span>本周 <b>${state.events.filter(e=>!e.done&&e.date>=t&&e.date<=addDays(t,7)).length}</b> 项</span></div>
+      <button class="btn ghost sm" data-act="cal-today">回到今天</button>
+    </div>
+  </div>
+
+  <div class="split">
+    <section class="cal" style="border-top:0;padding-top:0">
+      <div class="cal-head">
+        <span class="m">${y} 年 ${m} 月</span>
+        <div class="nav">
+          <button class="btn quiet sm" data-act="cal-move" data-delta="-1" aria-label="上个月"><svg><use href="#i-left"/></svg></button>
+          <button class="btn quiet sm" data-act="cal-move" data-delta="1" aria-label="下个月"><svg><use href="#i-right"/></svg></button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        ${DAY_NAMES.map(d=>`<div class="cal-wd">${d.replace('周','')}</div>`).join('')}
+        ${cells.map(c=>{
+          const evs=byDate[c.date]||[];
+          const dots=evs.slice(0,3).map(e=>`<i class="cal-dot ${e.done?'g':''}"></i>`).join('');
+          return `<button class="cal-cell ${c.out?'out':''} ${c.date===t?'is-today':''} ${c.date===sel?'is-sel':''}" data-act="cal-select" data-date="${c.date}" ${c.out?'tabindex="-1"':''}>
+            <span>${parseD(c.date).getDate()}</span>
+            <span class="cal-dots">${dots}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      <div class="hr"></div>
+      <form data-form="event" autocomplete="off">
+        <div class="sec-head" style="margin-bottom:10px"><h2 style="font-size:15px">新增安排</h2><span class="sec-note">${dateCN(sel,false)}</span></div>
+        <div class="form-grid c2">
+          <label class="field" style="grid-column:1/-1"><span>事项</span><input class="input" name="title" maxlength="60" placeholder="例如 复诊 / 交房租 / 见朋友" required></label>
+          <label class="field"><span>日期</span><input class="input" type="date" name="date" value="${sel}" required></label>
+          <label class="field"><span>时间</span><input class="input" type="time" name="time"></label>
+          <label class="field"><span>标签</span><select class="input" name="tag">${tagOpts.map(o=>`<option>${o}</option>`).join('')}</select></label>
+          <div class="field" style="justify-content:flex-end"><button class="btn" type="submit" style="align-self:flex-start">加入日程</button></div>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <div class="sec-head" style="margin-top:0;border-top:0;padding-top:0">
+        <h2>${dateCN(sel,true)}</h2><span class="sec-note">${selEvents.length} 项</span>
+      </div>
+      ${selEvents.length?`<div class="rows">${selEvents.map(e=>`
+        <div class="row ${e.done?'done':''}">
+          ${checkBtn(e.done,'toggle-event',`data-id="${e.id}"`)}
+          <span class="ev-time ${!e.done&&e.date===t&&e.time&&e.time<new Date().toTimeString().slice(0,5)?'over':''}">${esc(e.time||'全天')}</span>
+          <div class="grow"><div class="t">${esc(e.title)}</div><div class="meta"><span class="tag ${e.tag==='工作'?'cool':e.tag==='健康'?'green':e.tag==='学习'?'gold':'warm'}">${esc(e.tag)}</span><span>${relTime(e.date)}</span></div></div>
+          <button class="btn quiet sm del" data-act="del-event" data-id="${e.id}" aria-label="删除"><svg><use href="#i-trash"/></svg></button>
+        </div>`).join('')}</div>`
+      :emptyHTML('这一天还是空白','把想做的事写下来，就有了一半的确定性。')}
+      ${overdue.length?`<div class="hr"></div>
+        <div class="eyebrow" style="margin-bottom:6px">已过期未完成</div>
+        <div class="rows">${overdue.map(e=>`
+          <div class="row">
+            ${checkBtn(e.done,'toggle-event',`data-id="${e.id}"`)}
+            <div class="grow"><div class="t">${esc(e.title)}</div><div class="meta"><span class="accent">${relTime(e.date)}</span></div></div>
+            <button class="btn quiet sm" data-act="reschedule" data-id="${e.id}" title="移到今天">今天</button>
+          </div>`).join('')}</div>`:''}
+    </section>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head"><h2>接下来的安排</h2><span class="sec-note">${upcoming.length} 项</span></div>
+    ${buckets.length?buckets.map(b=>`
+      <div class="shop-cat" style="padding-top:10px">${b.label}</div>
+      <div class="rows">${b.list.map(e=>`
+        <div class="row">
+          ${checkBtn(e.done,'toggle-event',`data-id="${e.id}"`)}
+          <span class="ev-time">${e.date===t?'今天':parseD(e.date).getMonth()+1+'/'+parseD(e.date).getDate()}</span>
+          <div class="grow"><div class="t">${esc(e.title)}</div><div class="meta"><span class="tag">${esc(e.tag)}</span><span>${esc(e.time||'全天')}</span></div></div>
+          <button class="btn quiet sm del" data-act="del-event" data-id="${e.id}" aria-label="删除"><svg><use href="#i-trash"/></svg></button>
+        </div>`).join('')}</div>`).join('')
+    :emptyHTML('未来没有安排','空白的一周也值得被认真安排。')}
+  </section>`;
+}
+
+/* ---------- 待买 ---------- */
+const SHOP_CATS=['食品','日常','家居','数码','衣物','礼物','其他'];
+function renderBuy(){
+  const left=state.shop.filter(s=>!s.done);
+  const done=state.shop.filter(s=>s.done);
+  const total=sumBy(left,s=>s.price*s.qty);
+  const groups={};
+  left.forEach(s=>{(groups[s.cat]=groups[s.cat]||[]).push(s);});
+  const catKeys=Object.keys(groups).sort((a,b)=>SHOP_CATS.indexOf(a)-SHOP_CATS.indexOf(b));
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Wishlist · 待买</div>
+      <h1>待买清单</h1>
+      <div class="sub">先放进清单，再决定要不要买。</div>
+    </div>
+    <div class="head-right">
+      <div class="stat-inline"><span>待买 <b>${left.length}</b> 件</span><span>预计 <b>${money(total)}</b></span>${done.length?`<span>已买 <b>${done.length}</b></span>`:''}</div>
+    </div>
+  </div>
+
+  <div class="split">
+    <section>
+      <div class="sec-head"><h2>清单</h2><span class="sec-note">${left.length} 件</span></div>
+      ${catKeys.length?catKeys.map(c=>`
+        <div class="shop-cat">${esc(c)}</div>
+        <div class="rows">${groups[c].map(s=>`
+          <div class="row">
+            ${checkBtn(false,'toggle-buy',`data-id="${s.id}"`)}
+            <div class="grow" style="flex:1">
+              <div class="t">${esc(s.name)} <span class="qty">×${s.qty}</span></div>
+              <div class="meta">${s.note?`<span>${esc(s.note)}</span>`:''}<span>单价 ${money(s.price)}</span></div>
+            </div>
+            <span class="price">${money(s.price*s.qty)}</span>
+            <button class="btn quiet sm del" data-act="del-buy" data-id="${s.id}" aria-label="删除"><svg><use href="#i-trash"/></svg></button>
+          </div>`).join('')}</div>`).join('')
+      :emptyHTML('清单是空的','把想要但不必立刻拥有的东西写进来。')}
+      <div class="shop-head"><span>合计</span><span class="t">${money(total)}</span></div>
+
+      ${done.length?`<details style="margin-top:18px">
+        <summary style="cursor:pointer;font:11px var(--mono);color:var(--ink-3);letter-spacing:.06em;padding:8px 0">已买 ${done.length} 件 · 展开</summary>
+        <div class="rows" style="margin-top:6px">${done.map(s=>`
+          <div class="row done">
+            ${checkBtn(true,'toggle-buy',`data-id="${s.id}"`)}
+            <div class="grow"><div class="t">${esc(s.name)}</div><div class="meta"><span>${esc(s.cat)}</span></div></div>
+            <span class="price">${money(s.price*s.qty)}</span>
+            <button class="btn quiet sm del" data-act="del-buy" data-id="${s.id}" aria-label="删除"><svg><use href="#i-trash"/></svg></button>
+          </div>`).join('')}</div>
+        <button class="btn ghost sm" data-act="clear-bought" style="margin-top:10px">清空已买</button>
+      </details>`:''}
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>添加一项</h2><span class="sec-note">不必马上下单</span></div>
+      <form data-form="shop" autocomplete="off">
+        <div class="form-grid c2">
+          <label class="field" style="grid-column:1/-1"><span>名称</span><input class="input" name="name" maxlength="40" placeholder="例如 降噪耳机 / 咖啡豆" required></label>
+          <label class="field"><span>单价</span><input class="input" type="number" name="price" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+          <label class="field"><span>数量</span><input class="input" type="number" name="qty" min="1" step="1" value="1" inputmode="numeric"></label>
+          <label class="field"><span>分类</span><select class="input" name="cat">${SHOP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></label>
+          <label class="field"><span>备注</span><input class="input" name="note" maxlength="40" placeholder="可选"></label>
+          <div class="form-actions" style="grid-column:1/-1"><button class="btn" type="submit">加入清单</button></div>
+        </div>
+      </form>
+      <div class="hr"></div>
+      <p class="quote">买东西前问自己：是现在需要，还是现在想要？<br>清单放三天还想要，再买。</p>
+    </section>
+  </div>`;
+}
+
+/* ---------- 书影音 ---------- */
+let mediaView={mode:'wall',type:'all',status:'all'};
+function starsHTML(n){
+  return `<span class="stars">${[1,2,3,4,5].map(i=>`<svg class="${i<=n?'on':''}"><use href="#i-star"/></svg>`).join('')}</span>`;
+}
+function coverBg(m){
+  const h=hashStr(m.title+'|'+m.creator)%360;
+  return `background:linear-gradient(152deg,hsl(${h} 21% 38%),hsl(${(h+24)%360} 18% 24%))`;
+}
+function renderMedia(){
+  const year=String(new Date().getFullYear());
+  const list=state.media.filter(m=>(mediaView.type==='all'||m.type===mediaView.type))
+    .filter(m=>mediaView.status==='all'||m.status===mediaView.status)
+    .slice().sort((a,b)=>b.added.localeCompare(a.added));
+  const counts={
+    book:state.media.filter(m=>m.type==='book').length,
+    movie:state.media.filter(m=>m.type==='movie').length,
+    music:state.media.filter(m=>m.type==='music').length
+  };
+  const rated=state.media.filter(m=>m.rating>0);
+  const avg=rated.length?(sumBy(rated,m=>m.rating)/rated.length):0;
+  const thisYear=state.media.filter(m=>m.added.startsWith(year));
+  const done=state.media.filter(m=>m.status==='done');
+  const monthly=Array.from({length:12},(_,i)=>{
+    const mm=pad2(i+1);
+    return {m:i+1,n:thisYear.filter(x=>x.added.slice(5,7)===mm).length};
+  });
+  const maxM=Math.max(1,...monthly.map(x=>x.n));
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Library · 收藏</div>
+      <h1>书影音</h1>
+      <div class="sub">看过什么，就会成为什么。</div>
+    </div>
+    <div class="head-right">
+      <div class="seg">
+        <button data-act="media-mode" data-mode="wall" aria-pressed="${mediaView.mode==='wall'}"><svg><use href="#i-book"/></svg>封面墙</button>
+        <button data-act="media-mode" data-mode="list" aria-pressed="${mediaView.mode==='list'}"><svg><use href="#i-rows"/></svg>列表</button>
+      </div>
+      <button class="btn sm" data-act="open-media"><svg><use href="#i-plus"/></svg>收录</button>
+    </div>
+  </div>
+
+  <div class="media-stats">
+    <div class="mstat"><div class="k">今年收录</div><div class="v">${thisYear.length}<small>部</small></div></div>
+    <div class="mstat"><div class="k">平均评分</div><div class="v">${avg?avg.toFixed(1):'—'}<small>/5</small></div></div>
+    <div class="mstat"><div class="k">已完成</div><div class="v">${done.length}<small>部</small></div></div>
+    <div class="mstat"><div class="k">总量</div><div class="v">${state.media.length}<small>部</small></div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-top:18px">
+    <div class="chips">
+      <button class="chip" data-act="media-type" data-type="all" aria-pressed="${mediaView.type==='all'}">全部 <span class="n">${state.media.length}</span></button>
+      <button class="chip" data-act="media-type" data-type="book" aria-pressed="${mediaView.type==='book'}">书 <span class="n">${counts.book}</span></button>
+      <button class="chip" data-act="media-type" data-type="movie" aria-pressed="${mediaView.type==='movie'}">影 <span class="n">${counts.movie}</span></button>
+      <button class="chip" data-act="media-type" data-type="music" aria-pressed="${mediaView.type==='music'}">音 <span class="n">${counts.music}</span></button>
+    </div>
+    <div class="chips chips-end">
+      <button class="chip" data-act="media-status" data-status="all" aria-pressed="${mediaView.status==='all'}">全部状态</button>
+      <button class="chip" data-act="media-status" data-status="wish" aria-pressed="${mediaView.status==='wish'}">想</button>
+      <button class="chip" data-act="media-status" data-status="doing" aria-pressed="${mediaView.status==='doing'}">在</button>
+      <button class="chip" data-act="media-status" data-status="done" aria-pressed="${mediaView.status==='done'}">已完成</button>
+    </div>
+  </div>
+
+  ${list.length?(mediaView.mode==='wall'?`<div class="covers">
+    ${list.map(m=>`
+      <button class="cover" data-act="open-media" data-id="${m.id}">
+        <div class="cover-art" style="${m.cover?'background:#2A2723':coverBg(m)}">
+          ${m.cover?`<img src="${m.cover}" alt="">`:''}
+          <span class="ctype">${MEDIA_TYPE[m.type].label}</span>
+          ${m.cover?'':`<div class="ct">${esc(m.title)}</div><div class="ca">${esc(m.creator||'')}</div>`}
+        </div>
+        <div class="cover-cap"><span class="ct2">${esc(m.title)}</span>
+          <span class="cm">${STATUS_LABEL[m.type][m.status]} ${m.rating?starsHTML(m.rating):''}</span></div>
+      </button>`).join('')}
+  </div>`:`<div class="rows">
+    ${list.map(m=>`
+      <div class="mrow" data-act="open-media" data-id="${m.id}" role="button" tabindex="0">
+        <div class="mrow-thumb" style="${m.cover?'background:#2A2723':coverBg(m)}">${m.cover?`<img src="${m.cover}" alt="">`:''}</div>
+        <div style="min-width:0;flex:1">
+          <div class="mrow-t">${esc(m.title)}</div>
+          <div class="mrow-m"><span class="tag">${MEDIA_TYPE[m.type].label}</span><span>${STATUS_LABEL[m.type][m.status]}</span>${m.creator?`<span>${esc(m.creator)}</span>`:''}<span>${relTime(m.added)}</span></div>
+          ${m.review?`<div class="mrow-r">${esc(m.review)}</div>`:''}
+        </div>
+        <div class="mrow-rt">${m.rating?starsHTML(m.rating):'<span class="mini">未评分</span>'}</div>
+      </div>`).join('')}
+  </div>`):emptyHTML('这里还空着','收录一本最近在读的书，或一部想看的电影。')}
+
+  <section class="sec">
+    <div class="sec-head"><h2>${year} 年度统计</h2><span class="sec-note">按收录月份</span></div>
+    <div class="g3">
+      <div>
+        <div class="eyebrow" style="margin-bottom:8px">类型分布</div>
+        ${Object.keys(counts).map(k=>`<div class="bar-row" style="margin-bottom:9px">
+        <div class="bar-top"><span class="n"><span>${k==='book'?'书籍':k==='movie'?'电影':'音乐'}</span></span><span class="v">${counts[k]} ${MEDIA_TYPE[k].unit}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${state.media.length?Math.max(2,counts[k]/state.media.length*100):2}%"></div></div>
+        </div>`).join('')}
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:8px">状态分布</div>
+        ${['wish','doing','done'].map(s=>{
+          const n=state.media.filter(m=>m.status===s).length;
+          return `<div class="bar-row" style="margin-bottom:9px">
+            <div class="bar-top"><span class="n"><span>${{wish:'想读 / 想看 / 想听',doing:'进行中',done:'已完成'}[s]}</span></span><span class="v">${n}</span></div>
+            <div class="bar-track"><div class="bar-fill c2" style="width:${state.media.length?Math.max(2,n/state.media.length*100):2}%"></div></div>
+          </div>`;
+        }).join('')}
+        <div class="stat-inline" style="margin-top:12px"><span>五星 <b>${state.media.filter(m=>m.rating===5).length}</b></span><span>未评分 <b>${state.media.filter(m=>!m.rating).length}</b></span></div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:8px">月度收录</div>
+        <div class="monthbars" style="height:86px;gap:4px">
+          ${monthly.map(x=>`<div class="mbar" title="${x.m} 月 · ${x.n} 部"><div class="bars"><div class="b" style="height:${Math.max(2,x.n/maxM*72)}px"></div></div><span class="lbl">${x.m}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function openMediaEditor(id){
+  const editing=id?state.media.find(m=>m.id===id):null;
+  const m=editing||{id:'',title:'',creator:'',type:'book',status:'wish',rating:0,review:'',cover:null,added:todayISO()};
+  let cover=m.cover;
+  openModal(`
+    <div class="modal-head">
+      <div><h3>${editing?'编辑收录':'收录一本 / 一部'}</h3><p class="hint">评分与短评可以以后再补。</p></div>
+      <button class="btn quiet x" data-act="modal-close" aria-label="关闭"><svg><use href="#i-x"/></svg></button>
+    </div>
+    <form data-form="media" data-id="${m.id}" autocomplete="off">
+      <div class="modal-body">
+        <div class="form-grid c2">
+          <label class="field" style="grid-column:1/-1"><span>标题</span><input class="input" name="title" maxlength="60" value="${esc(m.title)}" placeholder="书名 / 片名 / 专辑" required></label>
+          <label class="field"><span>作者 / 导演 / 音乐人</span><input class="input" name="creator" maxlength="40" value="${esc(m.creator)}" placeholder="可选"></label>
+          <label class="field"><span>类型</span><select class="input" name="type">
+            ${Object.keys(MEDIA_TYPE).map(k=>`<option value="${k}" ${m.type===k?'selected':''}>${MEDIA_TYPE[k].label==='书'?'书':MEDIA_TYPE[k].label==='影'?'电影':'音乐'}</option>`).join('')}
+          </select></label>
+          <label class="field"><span>状态</span><select class="input" name="status">
+            <option value="wish" ${m.status==='wish'?'selected':''}>想读 / 想看 / 想听</option>
+            <option value="doing" ${m.status==='doing'?'selected':''}>进行中</option>
+            <option value="done" ${m.status==='done'?'selected':''}>已完成</option>
+          </select></label>
+          <label class="field"><span>收录日期</span><input class="input" type="date" name="added" value="${m.added}"></label>
+          <div class="field" style="grid-column:1/-1"><span>评分</span>
+            <div class="star-pick" id="starPick">
+              ${[1,2,3,4,5].map(i=>`<button type="button" class="${i<=m.rating?'on':''}" data-act="pick-star" data-value="${i}" aria-label="${i} 星"><svg><use href="#i-star"/></svg></button>`).join('')}
+              <button type="button" class="btn quiet sm" data-act="pick-star" data-value="0" style="margin-left:6px">清除</button>
+              <input type="hidden" name="rating" value="${m.rating}">
+            </div>
+          </div>
+          <label class="field" style="grid-column:1/-1"><span>短评</span><textarea class="input" name="review" maxlength="300" rows="3" placeholder="一两句话，留给以后的自己">${esc(m.review)}</textarea></label>
+          <div class="field" style="grid-column:1/-1"><span>封面（可选，自动压缩）</span>
+            <div class="cover-drop" data-act="pick-cover">
+              <div class="thumb" id="coverThumb">${cover?`<img src="${cover}" alt="">`:'无封面'}</div>
+              <div class="txt"><b>选择本地图片</b>不选也可以，会用标题生成一张素色封面。建议小于 2MB。</div>
+            </div>
+            <input type="file" id="coverInput" accept="image/*" hidden>
+            <input type="hidden" name="coverData" value="">
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        ${editing?`<button class="btn danger sm" type="button" data-act="del-media" data-id="${m.id}">删除</button>`:''}
+        <span class="spacer"></span>
+        <button class="btn ghost" type="button" data-act="modal-close">取消</button>
+        <button class="btn" type="submit">保存</button>
+      </div>
+    </form>`,{
+    after(root){
+      const input=$('#coverInput',root);
+      input.addEventListener('change',()=>{
+        const f=input.files&&input.files[0];
+        if(!f) return;
+        shrinkImage(f,data=>{
+          cover=data;
+          $('input[name=coverData]',root).value=data;
+          $('#coverThumb',root).innerHTML=`<img src="${data}" alt="">`;
+        });
+      });
+    }
+  });
+}
+function shrinkImage(file,cb){
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+    try{
+      const max=420;
+      const scale=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.max(1,Math.round(img.width*scale));
+      c.height=Math.max(1,Math.round(img.height*scale));
+      const ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0,c.width,c.height);
+      cb(c.toDataURL('image/jpeg',.8));
+    }catch(e){ toast('图片处理失败','err'); }
+    URL.revokeObjectURL(url);
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('图片读取失败','err');};
+  img.src=url;
+}
+/* ---------- 数据 ---------- */
+function renderData(){
+  const bytes=bytesUsed();
+  const pct=clamp(bytes/(5*1024*1024)*100,.5,100);
+  const demoCount=['tx','habits','body','plan','events','shop','media'].reduce((a,k)=>a+state[k].filter(x=>x.demo).length,0);
+  const counts=[['记账流水',state.tx.length],['习惯',state.habits.length],['体重记录',state.body.length],['日程',state.events.length],['待买',state.shop.length],['书影音',state.media.length]];
+  const last=state.lastBackup?new Date(state.lastBackup):null;
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Archive · 数据</div>
+      <h1>数据与备份</h1>
+      <div class="sub">所有数据只存在这台设备的浏览器里，备份是最好的保险。</div>
+    </div>
+    <div class="head-right">
+      <div class="stat-inline"><span>存储 <b>${storeOK?'正常':'受限'}</b></span><span>已用 <b>${(bytes/1024).toFixed(0)} KB</b></span></div>
+    </div>
+  </div>
+
+  <div class="dgrid">
+    <section class="dblock">
+      <h3>本地存储</h3>
+      <p class="hint">写入 localStorage，输入即保存，关掉页面也不会丢。浏览器清理站点数据会一并清除，请定期导出。</p>
+      <div class="meter"><i style="width:${pct}%;background:${pct>80?'#A9552F':'#5C7157'}"></i></div>
+      <div class="stat-inline">
+        <span>约 ${(bytes/1024).toFixed(1)} KB</span><span>常见上限 5 MB</span><span>新增待备份 <b>${state.sinceBackup}</b> 条</span>
+      </div>
+      <div class="stat-list">${counts.map(c=>`<span>${c[0]} <b>${c[1]}</b></span>`).join('')}</div>
+      <div class="form-actions">
+        <button class="btn ghost sm" data-act="restore-bak"><svg><use href="#i-refresh"/></svg>恢复上次快照</button>
+        <span class="hint">${storeOK?'快照随保存自动更新':'存储异常，尽快导出'}</span>
+      </div>
+    </section>
+
+    <section class="dblock">
+      <h3>备份与导出</h3>
+      <p class="hint">JSON 备份包含全部记录，可用于换设备、换浏览器或恢复历史。Excel 适合做二次分析。</p>
+      <div class="stat-inline" style="margin-bottom:12px">
+        <span>上次备份 <b>${last?`${last.getFullYear()}.${pad2(last.getMonth()+1)}.${pad2(last.getDate())} ${pad2(last.getHours())}:${pad2(last.getMinutes())}`:'还没有'}</b></span>
+      </div>
+      <div class="form-actions" style="margin-top:0">
+        <button class="btn" data-act="export-json"><svg><use href="#i-down"/></svg>导出 JSON 备份</button>
+        <button class="btn ghost" data-act="export-xlsx"><svg><use href="#i-down"/></svg>导出 Excel</button>
+      </div>
+    </section>
+
+    <section class="dblock">
+      <h3>导入</h3>
+      <p class="hint">支持任意条数的备份文件；可以选择覆盖当前数据，或与现有记录合并。</p>
+      <div class="form-actions" style="margin-top:0">
+        <button class="btn ghost" data-act="import-pick"><svg><use href="#i-up"/></svg>选择文件</button>
+        <button class="btn ghost" data-act="import-text">粘贴 JSON 文本</button>
+        <span class="hint">.json</span>
+      </div>
+    </section>
+
+    <section class="dblock">
+      <h3>演示数据</h3>
+      <p class="hint">首次打开预置了少量示例，方便理解结构。清空后只保留你自己添加的内容。</p>
+      <div class="stat-inline" style="margin-bottom:12px"><span>当前演示记录 <b>${demoCount}</b> 条</span></div>
+      <button class="btn ghost sm" data-act="clear-demo" ${demoCount?'':'disabled style="opacity:.45"'}>清空演示数据</button>
+    </section>
+
+    <section class="dblock" style="grid-column:1/-1">
+      <div class="zone">
+        <h3>危险操作</h3>
+        <p class="hint" style="color:#8A5B50">清空全部数据不可撤销，建议先导出 JSON 备份。执行后工作台会回到空白状态。</p>
+        <div class="form-actions" style="margin-top:12px">
+          <button class="btn danger sm" data-act="clear-all">清空全部数据</button>
+          <button class="btn ghost sm" data-act="reset-demo">重置为演示数据</button>
+        </div>
+      </div>
+    </section>
+  </div>`;
+}
+
+/* ---------- 导出：JSON ---------- */
+function download(name,blob){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+function stamp(){
+  const d=new Date();
+  return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+}
+function exportJSON(){
+  try{
+    const payload=JSON.stringify(state,null,2);
+    download(`life-desk-${stamp()}.json`,new Blob([payload],{type:'application/json'}));
+    state.lastBackup=new Date().toISOString();
+    state.sinceBackup=0;
+    save();
+    render();
+    toast('备份已导出，建议存到网盘或另一台设备','');
+  }catch(e){ toast('导出失败：'+e.message,'err'); }
+}
+
+/* ---------- 导出：Excel（真 .xlsx） ---------- */
+const CRC_TABLE=(()=>{
+  const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}
+  return t;
+})();
+function crc32(u8){
+  let c=0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function zipStore(files){
+  const enc=new TextEncoder();
+  const parts=[],central=[];
+  let offset=0;
+  const now=new Date();
+  const dosTime=((now.getHours()<<11)|(now.getMinutes()<<5)|Math.floor(now.getSeconds()/2))&0xFFFF;
+  const dosDate=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;
+  files.forEach(f=>{
+    const name=enc.encode(f.name);
+    const data=typeof f.data==='string'?enc.encode(f.data):f.data;
+    const crc=crc32(data),size=data.length;
+    const lh=new Uint8Array(30+name.length),dv=new DataView(lh.buffer);
+    dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0x0800,true);
+    dv.setUint16(8,0,true);dv.setUint16(10,dosTime,true);dv.setUint16(12,dosDate,true);
+    dv.setUint32(14,crc,true);dv.setUint32(18,size,true);dv.setUint32(22,size,true);
+    dv.setUint16(26,name.length,true);dv.setUint16(28,0,true);
+    lh.set(name,30);
+    parts.push(lh,data);
+    const ch=new Uint8Array(46+name.length),cv=new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);
+    cv.setUint16(8,0x0800,true);cv.setUint16(10,0,true);
+    cv.setUint16(12,dosTime,true);cv.setUint16(14,dosDate,true);
+    cv.setUint32(16,crc,true);cv.setUint32(20,size,true);cv.setUint32(24,size,true);
+    cv.setUint16(28,name.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);
+    cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,offset,true);
+    ch.set(name,46);
+    central.push(ch);
+    offset+=lh.length+size;
+  });
+  const cdSize=central.reduce((a,c)=>a+c.length,0);
+  const eocd=new Uint8Array(22),ev=new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cdSize,true);ev.setUint32(16,offset,true);
+  return new Blob([...parts,...central,eocd],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function xmlEsc(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]))
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
+}
+function sheetXML(rows,widths){
+  const colName=i=>{let s='';i++;while(i>0){const r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=Math.floor((i-1)/26);}return s;};
+  const cols=widths?`<cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols>`:'';
+  const body=rows.map((r,ri)=>`<row r="${ri+1}">${r.map((v,ci)=>{
+    const ref=colName(ci)+(ri+1);
+    const style=ri===0?' s="1"':'';
+    if(typeof v==='number'&&Number.isFinite(v)) return `<c r="${ref}"${style}><v>${v}</v></c>`;
+    return `<c r="${ref}"${style} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v??'')}</t></is></c>`;
+  }).join('')}</row>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${cols}<sheetData>${body}</sheetData></worksheet>`;
+}
+function exportXLSX(){
+  const t=todayISO();
+  const detail=[['日期','类型','分类','备注','金额（支出为负）']];
+  state.tx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>{
+    detail.push([x.date,x.kind==='in'?'收入':'支出',x.cat,x.note||'',x.kind==='in'?x.amount:-x.amount]);
+  });
+  const catRows=[['分类','笔数','金额','占支出比']];
+  const monthOut=state.tx.filter(x=>x.kind==='out'&&monthKey(x.date)===monthKey(t));
+  const outTotal=sumBy(monthOut,x=>x.amount)||1;
+  OUT_CATS.map(c=>{
+    const rows=monthOut.filter(x=>x.cat===c);
+    return {c,n:rows.length,amount:sumBy(rows,x=>x.amount)};
+  }).filter(r=>r.n).sort((a,b)=>b.amount-a.amount)
+    .forEach(r=>catRows.push([r.c,r.n,r.amount,Math.round(r.amount/outTotal*1000)/10+'%']));
+  catRows.push(['合计',monthOut.length,sumBy(monthOut,x=>x.amount),'100%']);
+  const months=[];for(let i=11;i>=0;i--){const d=parseD(t.slice(0,7)+'-01');d.setMonth(d.getMonth()-i);months.push(`${d.getFullYear()}-${pad2(d.getMonth()+1)}`);}
+  const monthRows=[['月份','支出','收入','结余','预算']];
+  months.forEach(m=>{
+    const txs=state.tx.filter(x=>monthKey(x.date)===m);
+    const o=sumBy(txs.filter(x=>x.kind==='out'),x=>x.amount);
+    const inc=sumBy(txs.filter(x=>x.kind==='in'),x=>x.amount);
+    monthRows.push([m,o,inc,inc-o,budgetOf(m)]);
+  });
+  const sheets=[
+    {name:'明细',rows:detail,widths:[12,8,10,30,18]},
+    {name:'分类汇总',rows:catRows,widths:[12,8,12,12]},
+    {name:'月度对比',rows:monthRows,widths:[12,12,12,12,12]}
+  ];
+  const files=[
+    {name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`},
+    {name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`},
+    {name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets>${sheets.map((s,i)=>`<sheet name="${xmlEsc(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}
+<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`},
+    {name:'xl/styles.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>
+<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>
+<borders count="1"><border/></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>
+</styleSheet>`},
+    ...sheets.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXML(s.rows,s.widths)}))
+  ];
+  try{
+    download(`life-desk-${stamp()}.xlsx`,zipStore(files));
+    toast('Excel 已导出：明细 / 分类汇总 / 月度对比');
+  }catch(e){ toast('导出失败：'+e.message,'err'); }
+}
+
+/* ---------- 导入 ---------- */
+function looksLikeState(o){
+  if(!o||typeof o!=='object') return false;
+  if(o.app===APP_ID) return true;
+  return ['tx','habits','body','events','shop','media','plan'].some(k=>Array.isArray(o[k]));
+}
+function countsOf(s){
+  return [['记账',s.tx.length],['习惯',s.habits.length],['体重',s.body.length],['日程',s.events.length],['待买',s.shop.length],['收藏',s.media.length]];
+}
+function handleImportText(text,fromFile){
+  let parsed;
+  try{ parsed=JSON.parse(text); }
+  catch(err){ toast('JSON 解析失败：'+err.message,'err',5000); return; }
+  if(!looksLikeState(parsed)){ toast('这不是生活台的备份文件（缺少可识别的数据结构）','err',5000); return; }
+  const incoming=normalize(parsed);
+  if(!incoming){ toast('备份结构无法识别','err'); return; }
+  const c=countsOf(incoming);
+  const total=c.reduce((a,x)=>a+x[1],0);
+  openModal(`<div class="modal-head"><div><h3>导入备份</h3><p class="hint">共 ${total} 条记录 · ${fromFile?'来自文件':'来自粘贴的文本'}</p></div>
+      <button class="btn quiet x" data-act="modal-close" aria-label="关闭"><svg><use href="#i-x"/></svg></button></div>
+    <div class="modal-body">
+      <div class="stat-inline" style="margin-bottom:14px">${c.map(x=>`<span>${x[0]} <b>${x[1]}</b></span>`).join('')}</div>
+      <p class="hint">「合并」会保留现有记录并补充新记录（按 id 去重）；「覆盖」会用备份替换当前全部数据。</p>
+    </div>
+    <div class="modal-foot"><span class="spacer"></span>
+      <button class="btn ghost" data-act="modal-close">取消</button>
+      <button class="btn ghost" data-act="import-do" data-mode="merge">合并导入</button>
+      <button class="btn" data-act="import-do" data-mode="replace">覆盖导入</button>
+    </div>`,{after(){ pendingImport=incoming; }});
+}
+let pendingImport=null;
+function applyImport(mode){
+  if(!pendingImport) return;
+  if(mode==='replace'){
+    const keep={lastBackup:state.lastBackup,sinceBackup:num(state.sinceBackup)};
+    state=pendingImport;
+    state.lastBackup=keep.lastBackup||state.lastBackup;
+  }else{
+    const s=pendingImport;
+    ['tx','habits','body','plan','events','shop','media'].forEach(k=>{
+      const ids=new Set(state[k].map(x=>x.id));
+      s[k].forEach(x=>{if(!ids.has(x.id)){state[k].push(x);ids.add(x.id);}});
+    });
+    const intakeDates=new Set(state.intake.map(x=>x.date));
+    s.intake.forEach(x=>{if(!intakeDates.has(x.date)){state.intake.push(x);intakeDates.add(x.date);}});
+    Object.keys(s.budgets).forEach(k=>{if(state.budgets[k]==null)state.budgets[k]=s.budgets[k];});
+  }
+  pendingImport=null;
+  state.sinceBackup=0;
+  save();
+  closeModal();
+  render();
+  toast(mode==='replace'?'已覆盖导入':'已合并导入');
+}
+
+/* ---------- 演示数据 ---------- */
+function seedDemo(s){
+  const t=todayISO();
+  const mk=t.slice(0,7);
+  const prevDay=n=>{const d=parseD(t);d.setDate(1);d.setMonth(d.getMonth()-1);return iso(new Date(d.getFullYear(),d.getMonth(),Math.min(n,28)));};
+  s.tx=[
+    {kind:'out',amount:28,cat:'餐饮',note:'手冲咖啡与可颂',date:t},
+    {kind:'out',amount:12.5,cat:'交通',note:'地铁往返',date:t},
+    {kind:'out',amount:268,cat:'购物',note:'一双走路舒服的鞋',date:addDays(t,-2)},
+    {kind:'out',amount:186,cat:'健康',note:'维生素与体脂秤电池',date:addDays(t,-4)},
+    {kind:'out',amount:45,cat:'娱乐',note:'电影票',date:addDays(t,-7)},
+    {kind:'out',amount:98,cat:'学习',note:'一本讲设计的书',date:addDays(t,-9)},
+    {kind:'out',amount:64,cat:'餐饮',note:'周末早午餐',date:addDays(t,-11)},
+    {kind:'in',amount:12000,cat:'工资',note:'月薪',date:mk+'-05'},
+    {kind:'out',amount:3200,cat:'居住',note:'房租',date:mk+'-06'},
+    {kind:'out',amount:2200,cat:'居住',note:'上月房租',date:prevDay(6)},
+    {kind:'out',amount:640,cat:'餐饮',note:'上月外食',date:prevDay(18)},
+    {kind:'in',amount:800,cat:'副业',note:'稿费',date:prevDay(20)}
+  ].map(x=>({...x,id:uid(),demo:true}));
+
+  const log=fn=>{const o={};for(let i=0;i<30;i++){const d=addDays(t,-i);const v=fn(i);if(v>0)o[d]=v;}return o;};
+  s.habits=[
+    {name:'早起',type:'check',target:0,unit:'',color:'#A98A4B',log:log(i=>i%7===6?0:1)},
+    {name:'喝水',type:'count',target:8,unit:'杯',color:'#5C7157',log:log(i=>i%7===0?8:5+(i%3))},
+    {name:'睡眠',type:'number',target:7.5,unit:'小时',color:'#4C6472',log:log(i=>i===6||i===14||i===23?0:round1(6.4+(i%5)*0.3))}
+  ].map(h=>({...h,id:uid(),demo:true}));
+
+  s.body=[48,41,34,27,20,13,6,0].map((n,i)=>({
+    id:uid(),demo:true,date:addDays(t,-n),
+    weight:round1(68.45-i*0.35),bodyfat:round1(24.3-i*0.3)
+  }));
+
+  s.intake=[0,1,2,3,4,5].map(n=>({id:uid(),demo:true,date:addDays(t,-n),kcal:1650+(n%4)*90}));
+
+  s.plan=[
+    {day:1,text:'力量训练 · 上肢 40 分钟'},{day:2,text:'快走 6000 步'},
+    {day:3,text:'休息 / 拉伸 10 分钟'},{day:4,text:'力量训练 · 下肢 40 分钟'},
+    {day:5,text:'慢跑 3 公里'},{day:6,text:'长距离快走 40 分钟'},{day:7,text:'完全休息'}
+  ].map(p=>({...p,id:uid(),demo:true,done:false}));
+
+  s.events=[
+    {date:t,time:'20:00',title:'整理下周行程',tag:'生活'},
+    {date:addDays(t,1),time:'09:30',title:'去医院复诊',tag:'健康'},
+    {date:addDays(t,2),time:'19:00',title:'和朋友吃饭',tag:'生活'},
+    {date:addDays(t,4),time:'',title:'交房租',tag:'生活'},
+    {date:addDays(t,-2),time:'',title:'归还借的书',tag:'学习'}
+  ].map(e=>({...e,id:uid(),demo:true,done:false}));
+
+  s.shop=[
+    {name:'咖啡豆 · 中深烘',price:88,qty:1,cat:'食品',note:'喝完再买'},
+    {name:'走路通勤的鞋',price:499,qty:1,cat:'衣物',note:'等打折'},
+    {name:'收纳盒',price:39,qty:2,cat:'家居',note:'衣柜换季'}
+  ].map(x=>({...x,id:uid(),demo:true,done:false}));
+
+  s.media=[
+    {title:'人类简史',creator:'尤瓦尔·赫拉利',type:'book',status:'done',rating:5,review:'把熟悉的世界重新讲了一遍。读完再看新闻，会多一点距离感。',added:addDays(t,-26)},
+    {title:'星际穿越',creator:'克里斯托弗·诺兰',type:'movie',status:'done',rating:5,review:'重看第三遍，仍然为书架后那一幕失语。',added:addDays(t,-40)},
+    {title:'也许你该找个人聊聊',creator:'洛莉·戈特利布',type:'book',status:'doing',rating:4,review:'读到一半。咨询师也需要被咨询，这件事本身就很温柔。',added:addDays(t,-8)},
+    {title:'为忙人准备的爵士乐',creator:'Various Artists',type:'music',status:'wish',rating:0,review:'',added:addDays(t,-2)}
+  ].map(m=>({...m,id:uid(),demo:true,cover:null}));
+  return s;
+}
+function clearDemo(){
+  const n=['tx','habits','body','plan','events','shop','media'].reduce((a,k)=>a+state[k].filter(x=>x.demo).length,0);
+  if(!n){ toast('没有可清空的演示数据'); return; }
+  confirmModal('清空演示数据',`将移除 ${n} 条示例记录，你自己添加的内容不受影响。`, '清空演示',()=>{
+    ['tx','habits','body','plan','events','shop','media'].forEach(k=>{state[k]=state[k].filter(x=>!x.demo);});
+    save(); render(); toast('演示数据已清空');
+  });
+}
+function clearAll(){
+  confirmModal('清空全部数据','所有记录、习惯、收藏都会被删除，且无法恢复。建议先导出 JSON 备份。','确认清空',()=>{
+    state=blankState();
+    save(); render(); toast('已清空，工作台回到空白');
+  },true);
+}
+function restoreBak(){
+  let raw=null;
+  try{ raw=localStorage.getItem(BAK); }catch(e){}
+  if(!raw){ toast('还没有可用的快照','warn'); return; }
+  let s=null;
+  try{ s=normalize(JSON.parse(raw)); }catch(e){}
+  if(!s){ toast('快照已损坏，无法恢复','err'); return; }
+  confirmModal('恢复上次快照',`快照包含 ${s.tx.length} 笔记账、${s.media.length} 条收藏。当前数据会被替换。`,'恢复',()=>{
+    state=s; save(); render(); toast('已恢复到上次快照');
+  });
+}
+
+/* ---------- 存储异常 / 恢复 ---------- */
+function showRecovery(raw,msg){
+  const hasBak=(()=>{
+    try{ const b=localStorage.getItem(BAK); return b&&normalize(JSON.parse(b))?b:null; }catch(e){ return null; }
+  })();
+  const screen=document.createElement('div');
+  screen.className='recovery';
+  screen.id='recovery';
+  screen.innerHTML=`<div class="recovery-inner">
+    <div class="eyebrow">Storage · 数据异常</div>
+    <h1>本地数据读不出来</h1>
+    <p class="hint" style="font-size:13px">${esc(msg||'数据解析失败')}。原始内容仍然保存在浏览器里，没有被覆盖。你可以先导出这份原始数据留档，再尝试从快照恢复。</p>
+    <pre>${esc((raw||'').slice(0,1200))}${raw&&raw.length>1200?'\n…（已截断显示）':''}</pre>
+    <div class="ops">
+      ${hasBak?`<button class="op" id="rcBak"><span>↺</span><span><b>恢复上次快照</b><small>快照保存于最近一次成功加载时，通常只丢失最后一次改动。</small></span></button>`:''}
+      <button class="op" id="rcDl"><span>↓</span><span><b>导出损坏的原始数据</b><small>保存为 txt，便于人工检查或后续修复。</small></span></button>
+      <button class="op" id="rcReset"><span>＋</span><span><b>清空并重新开始</b><small>会覆盖损坏数据，打开一个带示例的新工作台。</small></span></button>
+    </div>
+  </div>`;
+  document.body.appendChild(screen);
+  document.body.classList.add('modal-open');
+  const close=()=>{screen.remove();document.body.classList.remove('modal-open');};
+  const bak=screen.querySelector('#rcBak');
+  if(bak) bak.onclick=()=>{
+    try{
+      state=normalize(JSON.parse(hasBak));
+      save(); close(); finishBoot(); toast('已从快照恢复');
+    }catch(e){ toast('快照恢复失败：'+e.message,'err'); }
+  };
+  screen.querySelector('#rcDl').onclick=()=>{
+    download(`life-desk-damaged-${stamp()}.txt`,new Blob([raw||''],{type:'text/plain'}));
+  };
+  screen.querySelector('#rcReset').onclick=()=>{
+    state=seedDemo(blankState());
+    save(); close(); finishBoot(); toast('已重新开始');
+  };
+}
+
+/* ---------- 启动 ---------- */
+function finishBoot(){
+  const hash=(location.hash||'').replace('#','');
+  currentView=VIEWS.some(v=>v.id===hash)?hash:'today';
+  go(currentView,true);
+  if(!storeOK) toast('本地存储不可用，本次记录无法持久保存','err',7000);
+}
+function boot(){
+  renderNav();
+  let raw=null,readErr=null;
+  try{ raw=localStorage.getItem(KEY); }
+  catch(e){ readErr=e; }
+  if(readErr){
+    state=seedDemo(blankState());
+    storeOK=false;
+    setStore('fail','无法访问本地存储');
+    finishBoot();
+    return;
+  }
+  if(!raw){
+    state=seedDemo(blankState());
+    save();
+    finishBoot();
+    return;
+  }
+  try{
+    const parsed=JSON.parse(raw);
+    const s=normalize(parsed);
+    if(!s) throw new Error('结构无法识别，可能不是生活台的数据');
+    state=s;
+    try{ localStorage.setItem(BAK,raw); }catch(_){}
+    finishBoot();
+  }catch(e){
+    showRecovery(raw,e.message);
+  }
+}
+
+/* ---------- 交互 ---------- */
+let pendingStar=0;
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');
+  if(!t) return;
+  if(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT') return;
+  const act=t.dataset.act;
+  const id=t.dataset.id;
+  switch(act){
+    case 'nav': go(t.dataset.view); break;
+    case 'modal-close': closeModal(); break;
+    case 'backup-later': backupSnoozed=true; render(); break;
+    case 'export-json': exportJSON(); break;
+    case 'export-xlsx': exportXLSX(); break;
+
+    case 'month-move': {
+      const d=parseD(moneyView.month+'-01');
+      d.setMonth(d.getMonth()+Number(t.dataset.delta));
+      moneyView.month=`${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+      moneyView.cat='all';
+      render();
+      break;
+    }
+    case 'pick-kind': {
+      moneyView.formKind=t.dataset.kind;
+      const form=t.closest('form');
+      if(form){
+        $$('.chip[data-act="pick-kind"]',form).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===moneyView.formKind)));
+        const hidden=form.querySelector('input[name=kind]'); if(hidden) hidden.value=moneyView.formKind;
+        const sel=form.querySelector('select[name=cat]');
+        if(sel) sel.innerHTML=(moneyView.formKind==='in'?IN_CATS:OUT_CATS).map(c=>`<option value="${c}">${c}</option>`).join('');
+      }
+      break;
+    }
+    case 'tx-filter': moneyView.kind=t.dataset.kind; render(); break;
+    case 'tx-cat': moneyView.cat=moneyView.cat===t.dataset.cat?'all':t.dataset.cat; render(); break;
+    case 'del-tx': deleteItem('tx',id,'这笔记录'); break;
+    case 'edit-budget': {
+      const mk=moneyView.month, cur=budgetOf(mk);
+      openModal(`<div class="modal-head"><div><h3>${mk.replace('-',' 年 ')} 月预算</h3><p class="hint">留空或填 0 会恢复默认预算 ${money(state.settings.budget)}。</p></div>
+        <button class="btn quiet x" data-act="modal-close" aria-label="关闭"><svg><use href="#i-x"/></svg></button></div>
+        <form data-form="budget"><div class="modal-body">
+          <label class="field"><span>月度预算（元）</span><input class="input" type="number" name="budget" min="0" step="100" value="${cur}" autofocus></label>
+          <p class="hint" style="margin-top:10px">预算按月份单独保存，切换月份可分别设置。</p>
+        </div><div class="modal-foot"><span class="spacer"></span><button class="btn ghost" type="button" data-act="modal-close">取消</button><button class="btn" type="submit">保存预算</button></div></form>`);
+      break;
+    }
+
+    case 'habit-check': {
+      const h=state.habits.find(x=>x.id===id); if(!h) break;
+      const d=t.dataset.date||todayISO();
+      if(habitDayValue(h,d)>0) delete h.log[d]; else h.log[d]=1;
+      save(); render();
+      break;
+    }
+    case 'habit-step': {
+      const h=state.habits.find(x=>x.id===id); if(!h) break;
+      const d=t.dataset.date||todayISO();
+      const next=Math.max(0,num(h.log[d])+Number(t.dataset.step));
+      if(next<=0) delete h.log[d]; else h.log[d]=next;
+      save(); render();
+      break;
+    }
+    case 'habit-color': {
+      habitForm.color=t.dataset.color;
+      const form=t.closest('form');
+      $$('.picker button',form).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.color===habitForm.color)));
+      const hidden=form.querySelector('input[name=color]'); if(hidden) hidden.value=habitForm.color;
+      break;
+    }
+    case 'del-habit': {
+      const h=state.habits.find(x=>x.id===id); if(!h) break;
+      confirmModal('删除习惯',`「${h.name}」的打卡记录会一起删除。`,'删除',()=>{
+        state.habits=state.habits.filter(x=>x.id!==id);
+        save(); render(); toast('习惯已删除');
+      });
+      break;
+    }
+
+    case 'fit-settings': openFitSettings(); break;
+    case 'del-body': deleteItem('body',id,'体重记录'); break;
+    case 'plan-toggle': {
+      const p=state.plan.find(x=>x.id===id); if(!p) break;
+      p.done=!p.done; save(); render(); break;
+    }
+    case 'del-plan': deleteItem('plan',id,'计划'); break;
+    case 'plan-focus': {
+      const form=$('form[data-form="plan"]');
+      if(form){ form.querySelector('select[name=day]').value=t.dataset.day; form.querySelector('input[name=text]').focus(); }
+      break;
+    }
+
+    case 'cal-move': {
+      const d=parseD(calView.month+'-01');
+      d.setMonth(d.getMonth()+Number(t.dataset.delta));
+      calView.month=`${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+      render(); break;
+    }
+    case 'cal-select': calView.sel=t.dataset.date; render(); break;
+    case 'cal-today': calView.month=monthKey(todayISO()); calView.sel=todayISO(); render(); break;
+    case 'toggle-event': {
+      const ev=state.events.find(x=>x.id===id); if(!ev) break;
+      ev.done=!ev.done; save(); render(); break;
+    }
+    case 'del-event': deleteItem('events',id,'日程'); break;
+    case 'reschedule': {
+      const ev=state.events.find(x=>x.id===id); if(!ev) break;
+      ev.date=todayISO(); save(); render(); toast('已移到今天'); break;
+    }
+
+    case 'toggle-buy': {
+      const s=state.shop.find(x=>x.id===id); if(!s) break;
+      s.done=!s.done; save(); render(); break;
+    }
+    case 'del-buy': deleteItem('shop',id,'清单项'); break;
+    case 'clear-bought':
+      confirmModal('清空已买','已买的记录会被删除。','清空',()=>{state.shop=state.shop.filter(x=>!x.done);save();render();});
+      break;
+
+    case 'media-mode': mediaView.mode=t.dataset.mode; render(); break;
+    case 'media-type': mediaView.type=t.dataset.type; render(); break;
+    case 'media-status': mediaView.status=t.dataset.status; render(); break;
+    case 'open-media': openMediaEditor(id||null); break;
+    case 'del-media': {
+      const m=state.media.find(x=>x.id===id); if(!m) break;
+      confirmModal('删除收录',`「${m.title}」会从收藏中移除。`,'删除',()=>{
+        state.media=state.media.filter(x=>x.id!==id);
+        save(); closeModal(); render(); toast('已删除');
+      });
+      break;
+    }
+    case 'pick-star': {
+      const v=Number(t.dataset.value)||0;
+      pendingStar=v;
+      const root=$('#modalRoot');
+      $$('#starPick button[data-act="pick-star"]',root).forEach(b=>{
+        const bv=Number(b.dataset.value)||0;
+        b.classList.toggle('on',bv>0&&bv<=v);
+      });
+      const hidden=root.querySelector('input[name=rating]'); if(hidden) hidden.value=v;
+      break;
+    }
+    case 'pick-cover': {
+      const inp=$('#coverInput'); if(inp) inp.click(); break;
+    }
+
+    case 'import-pick': {
+      const inp=$('#importFile'); if(inp){inp.value='';inp.click();} break;
+    }
+    case 'import-text': {
+      openModal(`<div class="modal-head"><div><h3>粘贴 JSON 备份</h3><p class="hint">把导出的 JSON 全文粘贴进来，条数不限。</p></div>
+        <button class="btn quiet x" data-act="modal-close" aria-label="关闭"><svg><use href="#i-x"/></svg></button></div>
+        <div class="modal-body"><textarea class="input" id="importText" style="min-height:180px;font:11px/1.6 var(--mono)" placeholder='{"app":"lifedesk", ...}'></textarea></div>
+        <div class="modal-foot"><span class="spacer"></span><button class="btn ghost" data-act="modal-close">取消</button>
+        <button class="btn" data-act="do-import-text">解析</button></div>`);
+      break;
+    }
+    case 'do-import-text': {
+      const ta=$('#importText');
+      if(ta&&ta.value.trim()){ const v=ta.value; closeModal(); handleImportText(v,false); }
+      else toast('请先粘贴内容','warn');
+      break;
+    }
+    case 'import-do': applyImport(t.dataset.mode); break;
+    case 'clear-demo': clearDemo(); break;
+    case 'clear-all': clearAll(); break;
+    case 'reset-demo':
+      confirmModal('重置为演示数据','当前全部记录会被替换为示例数据。','重置',()=>{state=seedDemo(blankState());save();render();toast('已重置为演示数据');},true);
+      break;
+    case 'restore-bak': restoreBak(); break;
+  }
+});
+
+document.addEventListener('submit',e=>{
+  const form=e.target.closest('form[data-form]');
+  if(!form) return;
+  e.preventDefault();
+  const fd=new FormData(form);
+  const kind=form.dataset.form;
+  const val=k=>String(fd.get(k)||'').trim();
+  if(kind==='tx'){
+    const amount=Math.abs(num(fd.get('amount')));
+    if(!(amount>0)){ toast('金额需要大于 0','warn'); return; }
+    state.tx.push({id:uid(),kind:val('kind')==='in'?'in':'out',amount:Math.round(amount*100)/100,
+      cat:val('cat')||'其他',note:val('note').slice(0,60),date:val('date')||todayISO()});
+    bump(1); render(); toast('已记下这一笔');
+    return;
+  }
+  if(kind==='budget'){
+    const mk=moneyView.month;
+    const v=Math.max(0,num(fd.get('budget')));
+    if(v>0) state.budgets[mk]=v; else delete state.budgets[mk];
+    save(); closeModal(); render(); toast('预算已更新');
+    return;
+  }
+  if(kind==='habit'){
+    const name=val('name');
+    if(!name){ toast('给习惯起个名字','warn'); return; }
+    const type=val('type');
+    state.habits.push({id:uid(),name:name.slice(0,20),type,
+      target:num(fd.get('target'))||(type==='count'?1:0),unit:val('unit').slice(0,6),
+      color:val('color')||HABIT_COLORS[0],log:{}});
+    habitForm.type=type;
+    bump(1); render(); toast('习惯已加入');
+    return;
+  }
+  if(kind==='body'){
+    const w=num(fd.get('weight'));
+    if(!(w>20&&w<300)){ toast('请输入合理的体重','warn'); return; }
+    const date=val('date')||todayISO();
+    const bf=num(fd.get('bodyfat'));
+    const exist=state.body.find(x=>x.date===date);
+    if(exist){ exist.weight=round1(w); exist.bodyfat=bf>0?round1(bf):0; exist.demo=false; }
+    else state.body.push({id:uid(),date,weight:round1(w),bodyfat:bf>0?round1(bf):0});
+    state.body.sort((a,b)=>a.date.localeCompare(b.date));
+    bump(1); render(); toast(exist?'已更新当天记录':'记录已保存');
+    return;
+  }
+  if(kind==='intake'){
+    const date=todayISO(), kcal=Math.max(0,Math.round(num(fd.get('kcal'))));
+    const rec=state.intake.find(x=>x.date===date);
+    if(rec) rec.kcal=kcal; else state.intake.push({id:uid(),date,kcal});
+    bump(1); render(); toast('今日摄入已记录');
+    return;
+  }
+  if(kind==='plan'){
+    const text=val('text');
+    if(!text){ toast('写点什么','warn'); return; }
+    state.plan.push({id:uid(),day:clamp(Number(fd.get('day'))||1,1,7),text:text.slice(0,40),done:false});
+    bump(1); render(); return;
+  }
+  if(kind==='event'){
+    const title=val('title');
+    if(!title){ toast('先写事项','warn'); return; }
+    const date=val('date')||todayISO();
+    state.events.push({id:uid(),title:title.slice(0,60),date,time:val('time'),tag:val('tag')||'生活',done:false});
+    calView.sel=date; calView.month=monthKey(date);
+    bump(1); render(); toast('已加入日程');
+    return;
+  }
+  if(kind==='shop'){
+    const name=val('name');
+    if(!name){ toast('先写名称','warn'); return; }
+    state.shop.push({id:uid(),name:name.slice(0,40),price:Math.max(0,num(fd.get('price'))),
+      qty:Math.max(1,Math.round(num(fd.get('qty'))||1)),cat:val('cat')||'其他',note:val('note').slice(0,40),done:false});
+    bump(1); render(); toast('已加入清单');
+    return;
+  }
+  if(kind==='fit'){
+    const map={height:1,goalWeight:1,tdee:1,kcalTarget:1,budget:1};
+    Object.keys(map).forEach(k=>{
+      const v=num(fd.get(k));
+      if(v>0) state.settings[k]=k==='height'?Math.round(v):Math.round(v*10)/10;
+    });
+    save(); closeModal(); render(); toast('设置已保存');
+    return;
+  }
+  if(kind==='media'){
+    const title=val('title');
+    if(!title){ toast('标题不能为空','warn'); return; }
+    const data={title:title.slice(0,60),creator:val('creator').slice(0,40),type:val('type'),
+      status:val('status'),rating:clamp(Math.round(num(fd.get('rating'))),0,5),
+      review:val('review').slice(0,300),cover:val('coverData')||null,added:val('added')||todayISO()};
+    const editId=form.dataset.id;
+    if(editId){
+      const m=state.media.find(x=>x.id===editId);
+      if(m){ Object.assign(m,data); m.demo=false; }
+    }else{
+      state.media.push({id:uid(),...data});
+    }
+    save(); closeModal(); render(); toast(editId?'已更新':'已收录');
+    return;
+  }
+});
+
+document.addEventListener('change',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el) return;
+  if(el.dataset.act==='habit-number'){
+    const h=state.habits.find(x=>x.id===el.dataset.id);
+    if(!h) return;
+    const d=el.dataset.date||todayISO();
+    const v=num(el.value);
+    if(v<=0) delete h.log[d]; else h.log[d]=Math.round(v*10)/10;
+    save();
+    render();
+  }
+});
+
+$('#importFile').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ const text=String(r.result||''); e.target.value=''; handleImportText(text,true); };
+  r.onerror=()=>toast('文件读取失败','err');
+  r.readAsText(f);
+});
+
+function deleteItem(listName,id,label){
+  const arr=state[listName];
+  const i=arr.findIndex(x=>x.id===id);
+  if(i<0) return;
+  const [item]=arr.splice(i,1);
+  save(); render();
+  toast(label+'已删除','',4200,{label:'撤销',fn:()=>{arr.splice(i,0,item);save();render();}});
+}
+function openFitSettings(){
+  const s=state.settings;
+  openModal(`<div class="modal-head"><div><h3>身体与热量</h3><p class="hint">用于计算 BMI、目标进度与热量缺口。</p></div>
+    <button class="btn quiet x" data-act="modal-close" aria-label="关闭"><svg><use href="#i-x"/></svg></button></div>
+    <form data-form="fit"><div class="modal-body"><div class="form-grid c2">
+      <label class="field"><span>身高 cm</span><input class="input" type="number" name="height" min="100" max="250" step="1" value="${s.height}"></label>
+      <label class="field"><span>目标体重 kg</span><input class="input" type="number" name="goalWeight" min="30" max="200" step="0.1" value="${s.goalWeight}"></label>
+      <label class="field"><span>每日总消耗 kcal</span><input class="input" type="number" name="tdee" min="800" max="6000" step="10" value="${s.tdee}"></label>
+      <label class="field"><span>每日摄入目标 kcal</span><input class="input" type="number" name="kcalTarget" min="500" max="5000" step="10" value="${s.kcalTarget}"></label>
+      <label class="field" style="grid-column:1/-1"><span>默认月度预算（元）</span><input class="input" type="number" name="budget" min="0" step="100" value="${s.budget}"></label>
+    </div></div>
+    <div class="modal-foot"><span class="spacer"></span><button class="btn ghost" type="button" data-act="modal-close">取消</button><button class="btn" type="submit">保存设置</button></div></form>`);
+}
+window.addEventListener('popstate',()=>{
+  const h=(location.hash||'').replace('#','');
+  if(h&&h!==currentView&&VIEWS.some(v=>v.id===h)) go(h,true);
+});
+
+/* 等所有模块的顶层声明完成后再启动，避免 TDZ */
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+else boot();
+
+/* ---------- 记账 ---------- */
+let moneyView={month:monthKey(todayISO()),kind:'all',cat:'all',formKind:'out'};
+
+function renderMoney(){
+  const mk=moneyView.month;
+  const all=state.tx.filter(x=>monthKey(x.date)===mk);
+  const out=all.filter(x=>x.kind==='out'), inc=all.filter(x=>x.kind==='in');
+  const spent=sumBy(out,x=>x.amount), income=sumBy(inc,x=>x.amount);
+  const bud=budgetOf(mk), remain=bud-spent;
+  const pct=bud>0?clamp(spent/bud*100,0,100):0;
+  const cats=OUT_CATS.map(c=>({name:c,amount:sumBy(out.filter(x=>x.cat===c),x=>x.amount)})).filter(c=>c.amount>0).sort((a,b)=>b.amount-a.amount);
+  const maxCat=cats.length?cats[0].amount:1;
+  const list=all.filter(x=>moneyView.kind==='all'||x.kind===moneyView.kind)
+                .filter(x=>moneyView.cat==='all'||x.cat===moneyView.cat)
+                .sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  const groups={};
+  list.forEach(x=>{(groups[x.date]=groups[x.date]||[]).push(x);});
+  const dayKeys=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  const months=[]; for(let i=5;i>=0;i--){const d=parseD(mk+'-01');d.setMonth(d.getMonth()-i);months.push(`${d.getFullYear()}-${pad2(d.getMonth()+1)}`);}
+  const mData=months.map(m=>{
+    const txs=state.tx.filter(x=>monthKey(x.date)===m);
+    return {m,out:sumBy(txs.filter(x=>x.kind==='out'),x=>x.amount),in:sumBy(txs.filter(x=>x.kind==='in'),x=>x.amount)};
+  });
+  const maxM=Math.max(1,...mData.map(m=>Math.max(m.out,m.in)));
+  const prevKey=(()=>{const d=parseD(mk+'-01');d.setMonth(d.getMonth()-1);return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;})();
+  const prevSpent=sumBy(state.tx.filter(x=>x.kind==='out'&&monthKey(x.date)===prevKey),x=>x.amount);
+  const mom=prevSpent>0?Math.round((spent-prevSpent)/prevSpent*100):null;
+  const catOptions=(kind)=> (kind==='in'?IN_CATS:OUT_CATS).map(c=>`<option value="${c}">${c}</option>`).join('');
+
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Ledger · 收支</div>
+      <h1>记账理财</h1>
+      <div class="sub">每一笔都记账，钱才有方向。</div>
+    </div>
+    <div class="head-right">
+      <div class="month-nav">
+        <button data-act="month-move" data-delta="-1" aria-label="上个月"><svg><use href="#i-left"/></svg></button>
+        <span>${mk.replace('-',' 年 ')} 月</span>
+        <button data-act="month-move" data-delta="1" aria-label="下个月"><svg><use href="#i-right"/></svg></button>
+      </div>
+      <button class="btn ghost sm" data-act="export-xlsx"><svg><use href="#i-down"/></svg>Excel</button>
+    </div>
+  </div>
+
+  <div class="money-sum">
+    <div class="msum out"><div class="k">本月支出</div><div class="v"><small>¥</small>${money(spent).slice(1)}</div>
+      <div class="s">${mom===null?'上月无记录':`环比 ${mom>0?'+':''}${mom}%`}</div></div>
+    <div class="msum in"><div class="k">本月收入</div><div class="v"><small>¥</small>${money(income).slice(1)}</div>
+      <div class="s">${inc.length} 笔收入</div></div>
+    <div class="msum bal"><div class="k">结余</div><div class="v"><small>¥</small>${income-spent<0?'−':''}${money(income-spent).slice(1)}</div>
+      <div class="s">${income?Math.round((income-spent)/income*100):0}% 结余率</div></div>
+    <div class="msum">
+      <div class="k">预算 ${bud>0?'· 剩 '+money(Math.max(0,remain)):'未设置'}
+        <button class="btn quiet sm" data-act="edit-budget" style="margin-left:auto;height:18px;padding:0 2px" aria-label="设置预算"><svg style="width:12px;height:12px"><use href="#i-edit"/></svg></button>
+      </div>
+      <div class="v"><small>¥</small>${money(bud).slice(1)}</div>
+      <div class="budget-line">
+        <div class="budget-track"><div class="budget-fill ${spent>bud?'over':''}" style="width:${pct}%"></div></div>
+        <div class="s" style="margin-top:5px">${bud>0?(spent>bud?'已超出 '+money(spent-bud):'已用 '+Math.round(pct)+'%'):'点右上角设定'}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-top:26px">
+    <section>
+      <div class="sec-head"><h2>记一笔</h2><span class="sec-note">${dateCN(todayISO())}</span></div>
+      <form data-form="tx" autocomplete="off">
+        <div class="form-grid c2">
+          <div class="field" style="grid-column:1/-1">
+            <span>类型</span>
+            <div class="chips">
+              <button type="button" class="chip" data-act="pick-kind" data-kind="out" aria-pressed="${moneyView.formKind!=='in'}">支出</button>
+              <button type="button" class="chip" data-act="pick-kind" data-kind="in" aria-pressed="${moneyView.formKind==='in'}">收入</button>
+              <input type="hidden" name="kind" value="${moneyView.formKind}">
+            </div>
+          </div>
+          <label class="field"><span>金额</span><input class="input" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00" required></label>
+          <label class="field"><span>分类</span><select class="input" name="cat">${catOptions(moneyView.formKind)}</select></label>
+          <label class="field"><span>日期</span><input class="input" name="date" type="date" value="${todayISO()}" required></label>
+          <label class="field"><span>备注</span><input class="input" name="note" maxlength="60" placeholder="可选"></label>
+          <div class="form-actions" style="grid-column:1/-1">
+            <button class="btn" type="submit">记下这笔</button><span class="hint">输入后回车即保存</span>
+          </div>
+        </div>
+      </form>
+    </section>
+    <section>
+      <div class="sec-head"><h2>消费结构</h2><span class="sec-note">${cats.length} 类</span></div>
+      ${cats.length?`<div class="bar-list">${cats.slice(0,7).map((c,i)=>`
+        <div class="bar-row">
+          <div class="bar-top"><span class="n"><i class="cat-dot ${CAT_CLASS[i%6]}"></i><span>${c.name}</span></span>
+            <span class="v">${money(c.amount)} · ${Math.round(c.amount/Math.max(1,spent)*100)}%</span></div>
+          <div class="bar-track"><div class="bar-fill ${CAT_CLASS[i%6]}" style="width:${Math.max(2,c.amount/maxCat*100)}%"></div></div>
+        </div>`).join('')}</div>`
+      :emptyHTML('本月还没有支出','记一笔午餐，结构图就会长出来。')}
+    </section>
+  </div>
+
+  <div class="split" style="margin-top:30px">
+    <section>
+      <div class="sec-head"><h2>明细</h2><span class="sec-note">${list.length} 笔 · ${money(sumBy(list,x=>x.kind==='in'?x.amount:-x.amount))}</span></div>
+      <div class="filter-bar">
+        <div class="chips">
+          <button class="chip" data-act="tx-filter" data-kind="all" aria-pressed="${moneyView.kind==='all'}">全部</button>
+          <button class="chip" data-act="tx-filter" data-kind="out" aria-pressed="${moneyView.kind==='out'}">支出</button>
+          <button class="chip" data-act="tx-filter" data-kind="in" aria-pressed="${moneyView.kind==='in'}">收入</button>
+        </div>
+        <div class="chips">
+          <button class="chip" data-act="tx-cat" data-cat="all" aria-pressed="${moneyView.cat==='all'}">全部分类</button>
+          ${cats.map(c=>`<button class="chip" data-act="tx-cat" data-cat="${c.name}" aria-pressed="${moneyView.cat===c.name}">${c.name}</button>`).join('')}
+        </div>
+      </div>
+      ${dayKeys.length?dayKeys.map(d=>{
+        const rows=groups[d];
+        const outD=sumBy(rows.filter(x=>x.kind==='out'),x=>x.amount);
+        const inD=sumBy(rows.filter(x=>x.kind==='in'),x=>x.amount);
+        return `<div class="ledger-day"><span class="d">${dateCN(d,false)}</span><span class="sum">${outD?'支出 '+money(outD):''}${outD&&inD?' · ':''}${inD?'收入 '+money(inD):''}</span></div>
+        <div class="rows">${rows.map(x=>`
+          <div class="row">
+            <span class="cat-dot ${CAT_CLASS[OUT_CATS.indexOf(x.cat)%6]||''}"></span>
+            <div class="grow"><div class="t">${esc(x.note||x.cat)}</div><div class="meta"><span>${esc(x.cat)}</span>${x.note?`<span>${esc(x.note)}</span>`:''}</div></div>
+            <span class="amt ${x.kind==='in'?'in':'out'}">${x.kind==='in'?'+':'−'}${money(x.amount).slice(1)}</span>
+            <button class="btn quiet sm del" data-act="del-tx" data-id="${x.id}" aria-label="删除这笔"><svg><use href="#i-trash"/></svg></button>
+          </div>`).join('')}</div>`;
+      }).join(''):emptyHTML('没有符合筛选的流水','换一个分类，或者记下新的一笔。')}
+    </section>
+    <section>
+      <div class="sec-head"><h2>月度对比</h2><span class="sec-note">近 6 个月</span></div>
+      <div class="monthbars">
+        ${mData.map(m=>`<div class="mbar ${m.m===mk?'is-cur':''}">
+          <div class="bars">
+            <div class="b" style="height:${Math.max(2,m.out/maxM*100)}%" title="支出 ${money(m.out)}"></div>
+            <div class="b in" style="height:${Math.max(2,m.in/maxM*100)}%" title="收入 ${money(m.in)}"></div>
+          </div>
+          <span class="lbl">${Number(m.m.slice(5))}月</span>
+        </div>`).join('')}
+      </div>
+      <div class="legend"><span><i style="background:#A9552F"></i>支出</span><span><i style="background:#5C7157;opacity:.6"></i>收入</span></div>
+      <div class="hr"></div>
+      <div class="kv">
+        <dt>本月支出</dt><dd>${money(spent)}</dd>
+        <dt>上月支出</dt><dd>${money(prevSpent)}</dd>
+        <dt>环比</dt><dd>${mom===null?'—':(mom>0?'<span class="dir up">↑ '+mom+'%</span>':'<span class="dir dn">↓ '+Math.abs(mom)+'%</span>')}</dd>
+        <dt>日均支出</dt><dd>${money(spent/Math.max(1,parseD(todayISO()).getDate()))}</dd>
+      </div>
+    </section>
+  </div>`;
+}
+
+</script>
+</body>
+</html>
